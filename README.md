@@ -6,15 +6,6 @@ A Flask points tracker for running a gameshow. It rolls random tasks for each ro
 
 You need **Python 3.9+**.
 
-**Windows (PowerShell)**
-
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-flask --app app run --debug
-```
-
 **Git Bash**
 
 ```bash
