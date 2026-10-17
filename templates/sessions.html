@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Sessions · {{ config.GAME_TITLE }}{% endblock %}
+
+{% block body %}
+<div class="mx-auto max-w-5xl px-4 pb-20">
+  <header class="flex flex-wrap items-center gap-3 py-6">
+    <a href="/" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left" class="size-4"></i> Back to game</a>
+  </header>
+
+  <div class="mb-6 flex items-center gap-3">
+    <div class="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-primary to-secondary text-primary-content shadow-lg shadow-primary/30">
+      <i data-lucide="folder-open" class="size-6"></i>
+    </div>
+    <div>
+      <h1 class="font-display text-3xl font-extrabold tracking-tight">Sessions</h1>
+      <p class="text-sm opacity-60">{{ sessions|length }} saved game{{ 's' if sessions|length != 1 }}</p>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    {% for s in sessions %}
+    <div id="session-{{ s.slug }}" class="session-row glass-card flex flex-wrap items-center gap-4 rounded-2xl p-4 pl-5">
+      <a href="/sessions/{{ s.slug }}" class="min-w-0 flex-1">
+        <p class="truncate font-display text-xl font-bold hover:text-primary">{{ s.name }}</p>
+        <p class="text-xs opacity-60">
+          {{ s.saved_at|nice_datetime }} · {{ s.players|length }} player{{ 's' if s.players|length != 1 }} ·
+          {{ s.round_count }} round{{ 's' if s.round_count != 1 }}
+          {% if s.winners %} · 🏆 {{ s.winners|join(' & ') }}{% endif %}
+        </p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          {% for p in s.players %}
+          <span class="player-chip" style="--player: {{ p.color }}">{{ p.name }} <b class="tabular-nums">{{ p.total }}</b></span>
+          {% endfor %}
+        </div>
+      </a>
+      <div class="flex gap-1">
+        <a href="/sessions/{{ s.slug }}" class="btn btn-sm btn-outline btn-primary">Open</a>
+        <button type="button" class="btn btn-sm btn-ghost btn-square text-error/70 hover:text-error" title="Delete session"
+                hx-delete="/sessions/{{ s.slug }}" hx-target="#session-{{ s.slug }}" hx-swap="outerHTML"
+                hx-confirm="Delete the session “{{ s.name }}”? This removes its file from the sessions folder.">
+          <i data-lucide="trash-2" class="size-4"></i>
+        </button>
+      </div>
+    </div>
+    {% else %}
+    <div class="glass-card grid place-items-center gap-3 rounded-2xl px-6 py-16 text-center">
+      <div class="grid size-16 place-items-center rounded-full bg-primary/15 text-primary">
+        <i data-lucide="save" class="size-8"></i>
+      </div>
+      <h2 class="font-display text-2xl font-bold">No sessions yet</h2>
+      <p class="max-w-md text-sm opacity-60">Click <b>Save</b> in the game's header to save tonight's players, rounds and scores.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

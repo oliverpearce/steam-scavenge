@@ -4,7 +4,6 @@ document.addEventListener("alpine:init", () => {
   // Lives outside the swapped DOM so placements survive HTMX re-renders (e.g. a +1 mid-round).
   Alpine.store("round", {
     roundId: null,
-    max: 0,
     picks: [], // [{ id, tie }] in finishing order; tie = shares the previous pick's place
     tieNext: false,
 
@@ -12,12 +11,22 @@ document.addEventListener("alpine:init", () => {
       return this.roundId !== null;
     },
 
-    sync(roundId, max) {
+    sync(roundId) {
       if (this.roundId === roundId) return;
       this.roundId = roundId;
-      this.max = max;
       this.picks = [];
       this.tieNext = false;
+    },
+
+    playerCount() {
+      return document.querySelectorAll("[data-player-id]").length;
+    },
+
+    // Bottom place, matching scoring.places_for_round: anyone unclicked ties for last.
+    lastPlace() {
+      const placed = this.placed();
+      if (placed.length < this.playerCount()) return placed.length + 1;
+      return Math.max(0, ...placed.map((p) => p.place));
     },
 
     // Standard competition places, matching scoring.places_from_order on the server.
@@ -34,8 +43,9 @@ document.addEventListener("alpine:init", () => {
       return hit ? hit.place : null;
     },
 
+    // Last place gets 0; each place above earns one more.
     pointsFor(place) {
-      return Math.max((Number(this.max) || 0) - (place - 1), 0);
+      return Math.max(this.lastPlace() - place, 0);
     },
 
     medal(place) {
@@ -69,7 +79,7 @@ document.addEventListener("alpine:init", () => {
       htmx.ajax("POST", `/rounds/${this.roundId}/confirm`, {
         target: "#board",
         swap: "outerHTML",
-        values: { order: JSON.stringify(this.picks), max_points: this.max },
+        values: { order: JSON.stringify(this.picks) },
       });
     },
   });
@@ -114,6 +124,33 @@ function openScoreboard() {
   const modal = document.getElementById("scoreboard-modal");
   modal.showModal();
   htmx.trigger("#scoreboard-live", "refresh");
+}
+
+// Per-browser UI preferences (e.g. the round history points toggle). Storage can be blocked, so fail quietly.
+function loadPref(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function savePref(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* ignore */
+  }
+}
+
+function openTaskManager() {
+  document.getElementById("tasks-modal").showModal();
+  htmx.ajax("GET", "/partials/tasks?kind=tasks", { target: "#task-manager", swap: "outerHTML" });
+}
+
+function refreshBoard() {
+  htmx.ajax("GET", "/partials/board", { target: "#board", swap: "outerHTML" });
 }
 
 function toggleScoreboardFullscreen() {

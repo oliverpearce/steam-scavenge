@@ -10,13 +10,19 @@ import io
 import json
 import os
 import re
+import subprocess
 from collections import defaultdict
+from datetime import datetime
 
-from flask import Flask, Response, abort, render_template, request
-from sqlalchemy import func
+from flask import Flask, Response, abort, current_app, render_template, request
+from sqlalchemy import func, inspect, text
 
 from models import PALETTE, Player, Round, Score, db
-from scoring import places_from_order, points_for_place, rank_totals
+from scoring import last_place, places_for_round, points_for_place, rank_totals
+from sessions import delete_session, list_sessions, load_session, save_session
+from tasks import (
+    KINDS, Task, category_color, group_by_category, load_tasks, next_task_id, pick_task, save_tasks,
+)
 
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -33,11 +39,37 @@ def initials(name):
     return "".join(part[0] for part in name.split()[:2]).upper() or "?"
 
 
+def nice_datetime(value):
+    """'2026-10-17T19:42:05' -> 'Oct 17, 2026 · 7:42 PM'."""
+    try:
+        dt = datetime.fromisoformat(value)
+    except (TypeError, ValueError):
+        return value or ""
+    return f"{dt:%b} {dt.day}, {dt.year} · {int(dt.strftime('%I'))}:{dt:%M %p}"
+
+
+def git_info(repo_dir):
+    """Return (branch, short commit id) for the checkout, or (None, None) outside a git repo."""
+    def run(*args):
+        try:
+            result = subprocess.run(
+                ["git", *args], cwd=repo_dir, capture_output=True, text=True, timeout=2,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+        return (result.stdout.strip() or None) if result.returncode == 0 else None
+
+    return run("rev-parse", "--abbrev-ref", "HEAD"), run("rev-parse", "--short", "HEAD")
+
+
 def create_app(test_config=None):
     app = Flask(__name__)
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI="sqlite:///gameshow.db",  # stored in ./instance/
-        GAME_TITLE=os.environ.get("GAMESHOW_TITLE", "Gameshow Points"),
+        GAME_TITLE=os.environ.get("GAMESHOW_TITLE", "steam scavenge"),
+        TASKS_FILE=os.path.join(os.path.dirname(os.path.abspath(__file__)), "tasks.csv"),
+        GIMMICKS_FILE=os.path.join(os.path.dirname(os.path.abspath(__file__)), "gimmicks.csv"),
+        SESSIONS_DIR=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sessions"),
     )
     if test_config:
         app.config.update(test_config)
@@ -46,12 +78,30 @@ def create_app(test_config=None):
     db.init_app(app)
     with app.app_context():
         db.create_all()
+        add_missing_columns()
 
     app.add_template_filter(ordinal)
     app.add_template_filter(initials)
+    app.add_template_filter(nice_datetime)
+    app.add_template_global(category_color)
     app.context_processor(lambda: {"palette": PALETTE})
     register_routes(app)
     return app
+
+
+def add_missing_columns():
+    """Bring databases created by older versions up to date (create_all won't add columns)."""
+    existing = {column["name"] for column in inspect(db.engine).get_columns("round")}
+    new_columns = {
+        "task_id": "INTEGER",
+        "backup_task_id": "INTEGER",
+        "gimmick": "BOOLEAN NOT NULL DEFAULT 0",
+        "gimmick_task_id": "INTEGER",
+    }
+    for name, ddl in new_columns.items():
+        if name not in existing:
+            db.session.execute(text(f'ALTER TABLE "round" ADD COLUMN {name} {ddl}'))
+    db.session.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -60,6 +110,36 @@ def create_app(test_config=None):
 
 def next_round_number():
     return (db.session.query(func.max(Round.number)).scalar() or 0) + 1
+
+
+SLOT_FIELDS = {"main": "task_id", "backup": "backup_task_id", "gimmick": "gimmick_task_id"}
+
+
+def task_list(kind):
+    """"tasks" or "gimmicks", read from their CSV file."""
+    spec = KINDS[kind]
+    return load_tasks(current_app.config[spec["config"]], spec["category"])
+
+
+def played_ids(field, gimmick):
+    """Ids already played in finished rounds, so new rolls avoid repeats."""
+    rounds = Round.query.filter_by(status="done", gimmick=gimmick).all()
+    return {getattr(r, field) for r in rounds if getattr(r, field) is not None}
+
+
+def roll_task(rnd, slot):
+    """Give the round a fresh random task in `slot` ("main", "backup" or "gimmick")."""
+    if slot == "gimmick":
+        task = pick_task(
+            task_list("gimmicks"), avoid=played_ids("gimmick_task_id", True), never={rnd.gimmick_task_id},
+        )
+    else:
+        task = pick_task(
+            task_list("tasks"), avoid=played_ids("task_id", False), never={rnd.task_id, rnd.backup_task_id},
+        )
+    if task:
+        setattr(rnd, SLOT_FIELDS[slot], task.id)
+    return task
 
 
 def board_context():
@@ -80,7 +160,13 @@ def board_context():
             cells[(score.player_id, score.round_id)] = score
 
     ranked = rank_totals([(p, totals[p.id]) for p in players])
-    return {
+    tasks = task_list("tasks")
+    gimmicks = task_list("gimmicks")
+    ctx = {
+        "task_by_id": {t.id: t for t in tasks},
+        "task_groups": group_by_category(tasks),
+        "gimmick_by_id": {t.id: t for t in gimmicks},
+        "gimmick_groups": group_by_category(gimmicks),
         "players": players,
         "rounds": rounds,
         "open_round": open_round,
@@ -92,6 +178,54 @@ def board_context():
         "rank_of": {p.id: rank for rank, p, _ in ranked},
         "next_round_number": next_round_number(),
     }
+    ctx["round_history"] = round_summaries(ctx)
+    return ctx
+
+
+def round_summaries(ctx):
+    """Finished rounds as plain dicts (task, category, results): the shape saved in sessions too."""
+    players = {p.id: p for p in ctx["players"]}
+    summaries = []
+    for rnd in ctx["rounds"]:
+        if rnd.gimmick:
+            task = ctx["gimmick_by_id"].get(rnd.gimmick_task_id)
+            category = "gimmick"
+        else:
+            task = ctx["task_by_id"].get(rnd.task_id)
+            category = task.category if task else None
+        results = [
+            {"player_id": pid, "player": players[pid].name, "color": players[pid].color,
+             "place": score.place, "points": score.points}
+            for (pid, rid), score in ctx["cells"].items()
+            if rid == rnd.id and pid in players
+        ]
+        results.sort(key=lambda r: (-r["points"], r["place"] or 999, r["player"].lower()))
+        summaries.append({
+            "number": rnd.number,
+            "label": rnd.label,
+            "gimmick": rnd.gimmick,
+            "category": category,
+            "task": task.text if task else None,
+            "rule": task.rule if task else "",
+            "results": results,
+        })
+    return summaries
+
+
+def session_snapshot(name):
+    ctx = board_context()
+    return {
+        "version": 1,
+        "name": name,
+        "saved_at": datetime.now().isoformat(timespec="seconds"),
+        "game_title": current_app.config["GAME_TITLE"],
+        "players": [
+            {"id": p.id, "name": p.name, "color": p.color, "rank": rank,
+             "total": total, "bonus": ctx["bonus"][p.id]}
+            for rank, p, total in ctx["ranked"]
+        ],
+        "rounds": ctx["round_history"],
+    }
 
 
 def leaderboard_context():
@@ -101,10 +235,12 @@ def leaderboard_context():
     if last_round:
         last_scores = {pid: s for (pid, rid), s in ctx["cells"].items() if rid == last_round.id}
 
+    open_round = ctx["open_round"]
     fingerprint = json.dumps([
         [[p.id, p.name, p.color, total] for _, p, total in ctx["ranked"]],
         [[r.id, r.label] for r in ctx["rounds"]],
-        ctx["open_round"].id if ctx["open_round"] else None,
+        [open_round.id, open_round.task_id, open_round.gimmick, open_round.gimmick_task_id]
+        if open_round else None,
     ])
     ctx.update(
         last_round=last_round,
@@ -151,7 +287,13 @@ def form_int(name, default=None):
 def register_routes(app):
     @app.get("/")
     def host():
-        return render_template("host.html", **leaderboard_context())
+        git_branch, git_commit = git_info(app.root_path)
+        return render_template(
+            "host.html", git_branch=git_branch, git_commit=git_commit,
+            session_names=[s["name"] for s in list_sessions(app.config["SESSIONS_DIR"])],
+            today=f"{datetime.now():%b} {datetime.now().day}, {datetime.now().year}",
+            **leaderboard_context(),
+        )
 
     @app.get("/scoreboard")
     def scoreboard():
@@ -245,9 +387,52 @@ def register_routes(app):
         if not player_count:
             return board_response(toast="Add some players first", kind="warning")
 
-        db.session.add(Round(number=next_round_number(), max_points=player_count, status="open"))
+        rnd = Round(number=next_round_number(), max_points=player_count - 1, status="open")
+        roll_task(rnd, "main")
+        roll_task(rnd, "backup")
+        db.session.add(rnd)
         db.session.commit()
         return board_response()
+
+    @app.post("/rounds/<int:round_id>/task")
+    def set_task(round_id):
+        """Reroll a slot, or set it to a specific task when task_id is given."""
+        rnd = db.get_or_404(Round, round_id)
+        slot = request.form.get("slot", "main")
+        if slot not in SLOT_FIELDS:
+            abort(400)
+        kind = "gimmicks" if slot == "gimmick" else "tasks"
+        task_id = form_int("task_id")
+        if task_id is None:
+            if not roll_task(rnd, slot):
+                return board_response(toast=f"Nothing else to roll. Add more {kind} with the Tasks button", kind="warning")
+        elif task_id in {t.id for t in task_list(kind)}:
+            other = {"main": rnd.backup_task_id, "backup": rnd.task_id}.get(slot)
+            if task_id == other:  # picking the other slot's task swaps them
+                rnd.task_id, rnd.backup_task_id = rnd.backup_task_id, rnd.task_id
+            else:
+                setattr(rnd, SLOT_FIELDS[slot], task_id)
+        if slot != "backup":
+            rnd.gimmick = slot == "gimmick"
+        db.session.commit()
+        return board_response()
+
+    @app.post("/rounds/<int:round_id>/swap")
+    def swap_tasks(round_id):
+        rnd = db.get_or_404(Round, round_id)
+        rnd.task_id, rnd.backup_task_id = rnd.backup_task_id, rnd.task_id
+        rnd.gimmick = False
+        db.session.commit()
+        return board_response(toast="Backup task is now the main task", kind="info")
+
+    @app.post("/rounds/<int:round_id>/gimmick")
+    def toggle_gimmick(round_id):
+        rnd = db.get_or_404(Round, round_id)
+        rnd.gimmick = not rnd.gimmick
+        if rnd.gimmick and rnd.gimmick_task_id is None:  # keep an earlier roll if switching back
+            roll_task(rnd, "gimmick")
+        db.session.commit()
+        return board_response(toast="Gimmick round!" if rnd.gimmick else "Back to the rolled task", kind="info")
 
     @app.post("/rounds/<int:round_id>/confirm")
     def confirm_round(round_id):
@@ -255,15 +440,11 @@ def register_routes(app):
         if rnd.status != "open":
             return board_response(toast="That round is already finished", kind="warning")
 
-        max_points = form_int("max_points")
-        if max_points is not None:
-            rnd.max_points = max(max_points, 0)
-
         try:
             raw_order = json.loads(request.form.get("order", "[]"))
         except ValueError:
             abort(400)
-        player_ids = {p.id for p in Player.query.all()}
+        player_ids = [p.id for p in Player.query.order_by(Player.sort_order, Player.id).all()]
         order, seen = [], set()
         for pick in raw_order:
             pid = int(pick.get("id", 0))
@@ -273,13 +454,15 @@ def register_routes(app):
         if not order:
             return board_response(toast="Click players in finishing order first", kind="warning")
 
-        for pid, place in places_from_order(order):
+        # Unclicked players are tied for last, so they get 0.
+        places = places_for_round(order, player_ids)
+        bottom = last_place([place for _, place in places])
+        for pid, place in places:
             db.session.add(Score(
                 player_id=pid, round_id=rnd.id, place=place,
-                points=points_for_place(place, rnd.max_points),
+                points=points_for_place(place, bottom),
             ))
-        for pid in player_ids - seen:  # unplaced players get an explicit 0 for the sheet
-            db.session.add(Score(player_id=pid, round_id=rnd.id, points=0))
+        rnd.max_points = points_for_place(1, bottom)  # what 1st place earned, for reference
         rnd.status = "done"
         db.session.commit()
         return board_response(toast=f"{rnd.label} saved!", confetti=True)
@@ -287,21 +470,18 @@ def register_routes(app):
     @app.patch("/rounds/<int:round_id>")
     def update_round(round_id):
         rnd = db.get_or_404(Round, round_id)
-        toast = "Saved"
         if "title" in request.form:
             rnd.title = request.form["title"].strip()[:80] or None
-        max_points = form_int("max_points")
-        if max_points is not None and max_points != rnd.max_points:
-            rnd.max_points = max(max_points, 0)
-            toast = f"Max set to {rnd.max_points}. Click ↻ to recalculate this round's points"
         db.session.commit()
-        return htmx_response(status=204, toast=toast, kind="info")
+        return htmx_response(status=204, toast="Saved", kind="info")
 
     @app.post("/rounds/<int:round_id>/recalc")
     def recalc_round(round_id):
         rnd = db.get_or_404(Round, round_id)
+        bottom = last_place([score.place for score in rnd.scores])
         for score in rnd.scores:
-            score.points = points_for_place(score.place, rnd.max_points)
+            score.points = points_for_place(score.place if score.place else bottom, bottom)
+        rnd.max_points = points_for_place(1, bottom)
         db.session.commit()
         return board_response(toast=f"{rnd.label} recalculated")
 
@@ -316,6 +496,72 @@ def register_routes(app):
             remaining.number = number
         db.session.commit()
         return board_response(toast="Round cancelled" if was_open else f"Deleted {label}", kind="info")
+
+    # --- Task lists (tasks.csv / gimmicks.csv) ------------------------------
+
+    def task_manager_response(list_kind, **kwargs):
+        body = render_template(
+            "partials/task_manager.html",
+            list_kind=list_kind,
+            groups=group_by_category(task_list(list_kind)),
+            counts={k: len(task_list(k)) for k in KINDS},
+            categories=sorted({t.category for t in task_list("tasks")}),
+        )
+        return htmx_response(body, **kwargs)
+
+    def check_kind(kind):
+        if kind not in KINDS:
+            abort(404)
+
+    def task_from_form(kind, task_id):
+        """Build a Task from the add/edit form, or return an error message."""
+        text_value = request.form.get("text", "").strip()
+        if not text_value:
+            return None, "The task needs some text"
+        category = KINDS[kind]["category"] or request.form.get("category", "").strip().lower()
+        if not category:
+            return None, "Give the task a category"
+        rule = request.form.get("rule", "").strip() if "rule" in KINDS[kind]["fields"] else ""
+        return Task(task_id, category, text_value, rule), None
+
+    def save_list(kind, tasks, toast):
+        try:
+            save_tasks(current_app.config[KINDS[kind]["config"]], tasks, KINDS[kind]["fields"])
+        except OSError:
+            return task_manager_response(
+                kind, toast=f"Couldn't save {kind}.csv. Is it open in another program?", kind="error",
+            )
+        return task_manager_response(kind, toast=toast)
+
+    @app.get("/partials/tasks")
+    def task_manager():
+        kind = request.args.get("kind", "tasks")
+        check_kind(kind)
+        return task_manager_response(kind)
+
+    @app.post("/tasks/<kind>")
+    def add_task(kind):
+        check_kind(kind)
+        tasks = list(task_list(kind))
+        task, error = task_from_form(kind, next_task_id(tasks))
+        if error:
+            return task_manager_response(kind, toast=error, kind="warning")
+        return save_list(kind, tasks + [task], "Added")
+
+    @app.patch("/tasks/<kind>/<int:task_id>")
+    def edit_task(kind, task_id):
+        check_kind(kind)
+        task, error = task_from_form(kind, task_id)
+        if error:
+            return task_manager_response(kind, toast=error, kind="warning")
+        tasks = [task if t.id == task_id else t for t in task_list(kind)]
+        return save_list(kind, tasks, "Saved")
+
+    @app.delete("/tasks/<kind>/<int:task_id>")
+    def delete_task(kind, task_id):
+        check_kind(kind)
+        tasks = [t for t in task_list(kind) if t.id != task_id]
+        return save_list(kind, tasks, "Deleted")
 
     # --- Scores ------------------------------------------------------------
 
@@ -365,6 +611,54 @@ def register_routes(app):
         db.session.commit()
         message = "New game started" if mode == "all" else "Scores cleared, players kept"
         return board_response(toast=message, kind="info")
+
+    # --- Sessions ----------------------------------------------------------
+
+    @app.post("/sessions")
+    def save_current_session():
+        name = request.form.get("name", "").strip()[:80]
+        if not name:
+            return board_response(toast="Give the session a name", kind="warning")
+        if not Player.query.count():
+            return board_response(toast="Nothing to save yet. Add players first", kind="warning")
+        if Round.query.filter_by(status="open").first():
+            return board_response(toast="Confirm or cancel the open round before saving", kind="warning")
+
+        try:
+            _, replaced = save_session(app.config["SESSIONS_DIR"], session_snapshot(name))
+        except OSError:
+            return board_response(toast="Couldn't write to the sessions folder", kind="error")
+        if request.form.get("clear_after"):
+            Score.query.delete()
+            Round.query.delete()
+            db.session.commit()
+        verb = "Updated" if replaced else "Saved"
+        return board_response(toast=f"{verb} session “{name}”")
+
+    @app.get("/sessions")
+    def sessions_page():
+        return render_template("sessions.html", sessions=list_sessions(app.config["SESSIONS_DIR"]))
+
+    @app.get("/sessions/<slug>")
+    def session_page(slug):
+        try:
+            session = load_session(app.config["SESSIONS_DIR"], slug)
+        except (OSError, ValueError):
+            session = None
+        if session is None:
+            abort(404)
+        cells = {
+            (result["player_id"], index): result["points"]
+            for index, rnd in enumerate(session.get("rounds", []))
+            for result in rnd.get("results", [])
+        }
+        return render_template("session_detail.html", session=session, slug=slug, cells=cells)
+
+    @app.delete("/sessions/<slug>")
+    def remove_session(slug):
+        if not delete_session(app.config["SESSIONS_DIR"], slug):
+            abort(404)
+        return htmx_response(toast="Session deleted", kind="info")
 
 
 if __name__ == "__main__":

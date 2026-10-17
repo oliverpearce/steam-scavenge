@@ -1,4 +1,6 @@
-{# Out-of-band refresh after a score edit: tiles, totals and bonus cells, but not the cell being typed in. #}
+{# Out-of-band refresh after a score edit: tiles, totals, bonus cells and round history,
+   but not the cell being typed in. #}
+{% from "partials/round_history.html" import round_history_section with context %}
 {% with oob = true %}
   {% include "partials/player_grid.html" %}
   {% for p in players %}
@@ -6,3 +8,4 @@
     {% include "partials/bonus_input.html" %}
   {% endfor %}
 {% endwith %}
+{% if round_history %}{{ round_history_section(round_history, oob=true) }}{% endif %}

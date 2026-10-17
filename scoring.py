@@ -1,11 +1,30 @@
 """Pure scoring helpers: turn finishing places into points and totals into ranks."""
 
 
-def points_for_place(place, max_points):
-    """1st place earns max_points, each place after earns one fewer, never below zero."""
+def points_for_place(place, last_place):
+    """Last place earns 0 and each place above it earns one more."""
     if place is None or place < 1:
         return 0
-    return max(max_points - (place - 1), 0)
+    return max(last_place - place, 0)
+
+
+def places_for_round(order, player_ids):
+    """Places for everyone in a round: the clicked order, then anyone unclicked tied for last.
+
+    Returns a list of (player_id, place) covering every id in `player_ids`.
+    """
+    placed = places_from_order(order)
+    seen = {player_id for player_id, _ in placed}
+    unplaced = [player_id for player_id in player_ids if player_id not in seen]
+    return placed + [(player_id, len(placed) + 1) for player_id in unplaced]
+
+
+def last_place(places):
+    """The bottom place in a round. Older rounds may store None for unplaced players."""
+    known = [place for place in places if place is not None]
+    if len(known) < len(places):
+        return len(known) + 1
+    return max(known, default=0)
 
 
 def places_from_order(order):

@@ -25,8 +25,14 @@ class Round(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(80))
-    max_points = db.Column(db.Integer, nullable=False)
+    max_points = db.Column(db.Integer, nullable=False)  # points 1st place earned (last place gets 0)
     status = db.Column(db.String(10), nullable=False, default="open")  # "open" or "done"
+    # Task ids refer to rows in tasks.csv, gimmick_task_id to gimmicks.csv. A gimmick round
+    # shows its gimmick instead of its tasks (which are kept so you can switch back).
+    task_id = db.Column(db.Integer)
+    backup_task_id = db.Column(db.Integer)
+    gimmick = db.Column(db.Boolean, nullable=False, default=False)
+    gimmick_task_id = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     scores = db.relationship("Score", backref="round", cascade="all, delete-orphan")
 

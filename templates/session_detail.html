@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "partials/round_history.html" import round_history_section with context %}
+
+{% block title %}{{ session.name }} · Sessions{% endblock %}
+
+{% block body %}
+{% set players = session.players %}
+{% set rounds = session.rounds %}
+<div class="mx-auto max-w-6xl space-y-6 px-4 pb-20">
+  <header class="flex flex-wrap items-center gap-2 pt-6">
+    <a href="/sessions" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left" class="size-4"></i> Sessions</a>
+    <a href="/" class="btn btn-ghost btn-sm ml-auto"><i data-lucide="gamepad-2" class="size-4"></i> Back to game</a>
+  </header>
+
+  <div>
+    <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary">{{ session.game_title }}</p>
+    <h1 class="mt-1 font-display text-4xl font-extrabold tracking-tight md:text-5xl">{{ session.name }}</h1>
+    <p class="mt-1 text-sm opacity-60">
+      {{ session.saved_at|nice_datetime }} · {{ players|length }} player{{ 's' if players|length != 1 }} ·
+      {{ rounds|length }} round{{ 's' if rounds|length != 1 }}
+    </p>
+  </div>
+
+  {# --- Final standings --------------------------------------------------- #}
+  <section class="space-y-2">
+    <h2 class="flex items-center gap-2 font-display text-lg font-bold"><i data-lucide="trophy" class="size-5 opacity-70"></i> Final standings</h2>
+    <ol class="space-y-2">
+      {% for p in players %}
+      <li class="lb-row lb-row-compact {{ 'rank-%d' % p.rank if p.rank <= 3 }}" style="--player: {{ p.color }}">
+        <div class="rank-badge">{{ p.rank }}</div>
+        <div class="min-w-0 flex-1 truncate font-display text-xl font-bold md:text-2xl">{{ p.name }}</div>
+        {% if p.bonus %}<span class="text-xs opacity-60">bonus {{ '%+d' % p.bonus }}</span>{% endif %}
+        <div class="font-display text-3xl font-extrabold tabular-nums">{{ p.total }}</div>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  {% if rounds %}{{ round_history_section(rounds, pref_key="showSessionRoundPoints", default_show=true) }}{% endif %}
+
+  {# --- Score sheet (read-only) ------------------------------------------- #}
+  <section class="glass-card rounded-2xl">
+    <h2 class="flex items-center gap-2 px-5 pt-4 font-display text-lg font-bold">
+      <i data-lucide="table-2" class="size-5 opacity-70"></i> Score sheet
+    </h2>
+    <div class="overflow-x-auto p-2 pb-3">
+      <table class="table table-sm">
+        <thead>
+          <tr class="align-bottom">
+            <th>Player</th>
+            {% for r in rounds %}
+            <th class="min-w-24 normal-case">
+              <div class="text-sm font-semibold">{{ r.label }}</div>
+              {% if r.gimmick or r.category %}
+              <span class="cat-badge mt-1" style="--cat: {{ category_color('gimmick' if r.gimmick else r.category) }}"
+                    title="{{ r.task or '' }}">{{ '🎭 gimmick' if r.gimmick else r.category }}</span>
+              {% endif %}
+            </th>
+            {% endfor %}
+            <th>Bonus</th>
+            <th class="text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in players %}
+          <tr class="hover">
+            <td>
+              <div class="flex items-center gap-2 font-medium">
+                <span class="size-2.5 shrink-0 rounded-full" style="background: {{ p.color }}"></span>{{ p.name }}
+              </div>
+            </td>
+            {% for r in rounds %}
+            <td class="tabular-nums">{{ cells.get((p.id, loop.index0), '–') }}</td>
+            {% endfor %}
+            <td class="tabular-nums">{{ p.bonus }}</td>
+            <td class="text-right font-display text-lg font-bold tabular-nums">{{ p.total }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

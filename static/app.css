@@ -1,30 +1,42 @@
 [x-cloak] { display: none !important; }
 
-/* Midnight: deepen daisyUI's "night" base colours to a darker navy. */
+/* Midnight: deep navy surfaces with moonlit blue accents (overrides daisyUI "night"). */
 [data-theme="night"] {
-  --b1: 22% 0.045 268;
-  --b2: 18% 0.045 268;
-  --b3: 12% 0.04 268;
+  --b1: 19% 0.05 266;     /* inputs, popovers */
+  --b2: 15.5% 0.05 266;   /* cards, tiles */
+  --b3: 10% 0.045 266;    /* page */
+  --bc: 90% 0.03 260;     /* text: cool moonlight white */
+  --p: 70% 0.14 268;      /* primary: periwinkle */
+  --pc: 15% 0.05 268;
+  --s: 78% 0.1 230;       /* secondary: icy blue */
+  --sc: 15% 0.05 230;
+  --a: 88% 0.11 90;       /* accent: moon gold */
+  --ac: 20% 0.04 90;
 }
 
 body {
-  background-color: #050816;
+  background-color: #040714;
   background-image:
-    radial-gradient(ellipse at 20% -10%, rgb(67 56 202 / 0.28), transparent 45%),
-    radial-gradient(ellipse at 100% 0%, rgb(30 64 175 / 0.25), transparent 40%),
-    radial-gradient(ellipse at 50% 120%, rgb(14 22 64 / 0.9), transparent 60%),
-    linear-gradient(180deg, #0a1030 0%, #050816 55%, #03040d 100%);
+    /* the moon's glow, top right */
+    radial-gradient(circle at 88% 6%, rgb(224 231 255 / 0.18), rgb(165 180 252 / 0.08) 8%, transparent 26%),
+    radial-gradient(ellipse at 15% -10%, rgb(49 46 129 / 0.45), transparent 50%),
+    radial-gradient(ellipse at 50% 120%, rgb(12 20 60 / 0.95), transparent 60%),
+    linear-gradient(180deg, #0b1236 0%, #060a1f 45%, #02030a 100%);
   background-attachment: fixed;
 }
 
-/* Faint starfield behind everything. */
-body::before {
+/* Two starfield layers twinkling out of step. */
+body::before,
+body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.55;
+}
+
+body::before {
+  opacity: 0.7;
   background-image:
     radial-gradient(1px 1px at 12% 18%, #fff, transparent),
     radial-gradient(1px 1px at 68% 9%, #fff, transparent),
@@ -35,6 +47,29 @@ body::before {
     radial-gradient(1px 1px at 91% 76%, #fff, transparent),
     radial-gradient(1px 1px at 44% 92%, #c7d2fe, transparent);
   background-size: 420px 420px;
+  animation: twinkle 7s ease-in-out infinite;
+}
+
+body::after {
+  opacity: 0.45;
+  background-image:
+    radial-gradient(1px 1px at 22% 38%, #fff, transparent),
+    radial-gradient(1px 1px at 78% 22%, #dbeafe, transparent),
+    radial-gradient(1px 1px at 58% 71%, #fff, transparent),
+    radial-gradient(2px 2px at 37% 12%, #e0e7ff, transparent),
+    radial-gradient(1px 1px at 8% 53%, #fff, transparent),
+    radial-gradient(1px 1px at 95% 95%, #c7d2fe, transparent);
+  background-size: 290px 290px;
+  animation: twinkle 11s ease-in-out infinite reverse;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
 }
 
 .glass-card {
@@ -94,6 +129,136 @@ body::before {
     oklch(var(--b2));
 }
 
+/* Tasks ------------------------------------------------------------------- */
+
+.task-card {
+  --cat: #94a3b8;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cat) 16%, transparent), transparent 60%),
+    oklch(var(--b1) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--cat) 35%, transparent);
+}
+
+.task-card.gimmick {
+  --cat: #fbbf24;
+  background:
+    repeating-linear-gradient(135deg, rgb(251 191 36 / 0.06) 0 14px, transparent 14px 28px),
+    oklch(var(--b1) / 0.7);
+}
+
+.task-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fde68a;
+  background: rgb(251 191 36 / 0.1);
+  border: 1px solid rgb(251 191 36 / 0.3);
+}
+
+.cat-badge,
+.cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cat);
+  background: color-mix(in srgb, var(--cat) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat) 45%, transparent);
+}
+
+.cat-badge { padding: 0.12rem 0.6rem; font-size: 0.7rem; }
+.cat-badge.lg { padding: 0.3rem 0.9rem; font-size: 0.85rem; }
+.cat-badge.xl { padding: 0.4rem 1.2rem; font-size: 1.1rem; }
+
+.cat-chip {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.72rem;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+.cat-chip:hover { opacity: 0.9; }
+.cat-chip.is-active { opacity: 1; background: color-mix(in srgb, var(--cat) 30%, transparent); }
+
+.task-option {
+  text-align: left;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.85rem;
+  font-size: 0.875rem;
+  background: oklch(var(--b1));
+  border: 1px solid oklch(var(--bc) / 0.08);
+  transition: border-color 0.15s, background 0.15s;
+}
+.task-option:hover { border-color: oklch(var(--p) / 0.6); background: oklch(var(--p) / 0.08); }
+.task-option.is-current { border-color: oklch(var(--p)); background: oklch(var(--p) / 0.15); }
+
+.task-row {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: oklch(var(--b1) / 0.6);
+  border: 1px solid oklch(var(--bc) / 0.06);
+}
+.task-row:hover { border-color: oklch(var(--bc) / 0.14); }
+
+/* Round history ------------------------------------------------------------ */
+
+.round-card {
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  background: oklch(var(--b1) / 0.6);
+  border: 1px solid oklch(var(--bc) / 0.07);
+}
+.round-card.is-latest { border-color: oklch(var(--p) / 0.5); box-shadow: 0 0 30px -14px oklch(var(--p)); }
+
+.round-num {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.6rem;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-weight: 800;
+  background: oklch(var(--p) / 0.15);
+  color: oklch(var(--p));
+}
+
+/* Let long task text wrap inside the hover tooltip. */
+.round-tip::before {
+  max-width: 18rem;
+  white-space: normal;
+  text-align: left;
+  z-index: 50;
+}
+
+/* Sessions ----------------------------------------------------------------- */
+
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  background: color-mix(in srgb, var(--player) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--player) 40%, transparent);
+}
+
+.session-row { transition: border-color 0.15s; }
+.session-row:hover { border-color: oklch(var(--p) / 0.4); }
+
+.lb-row.lb-row-compact { padding: 0.65rem 1rem; gap: 0.9rem; }
+.lb-row.lb-row-compact .rank-badge { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; }
+
 .pick-chip {
   display: inline-flex;
   align-items: center;
@@ -122,8 +287,9 @@ body::before {
 
 .scoreboard-bg {
   background:
-    radial-gradient(ellipse at 50% -20%, rgb(79 70 229 / 0.35), transparent 60%),
-    radial-gradient(ellipse at 100% 100%, rgb(37 99 235 / 0.18), transparent 50%);
+    radial-gradient(circle at 85% 0%, rgb(224 231 255 / 0.14), transparent 30%),
+    radial-gradient(ellipse at 50% -20%, rgb(67 56 202 / 0.35), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgb(30 58 138 / 0.25), transparent 50%);
 }
 
 /* Scoreboard popup on the host page */
@@ -132,7 +298,7 @@ body::before {
   max-width: none;
   max-height: 92vh;
   padding: 2rem 1.5rem;
-  background-color: #070b1f;
+  background-color: #050920;
   border: 1px solid rgb(129 140 248 / 0.25);
   box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.9), 0 0 60px -20px rgb(99 102 241 / 0.5);
 }
