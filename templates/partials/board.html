@@ -1,0 +1,8 @@
+<div id="board" class="space-y-6">
+  {# Keeps the client-side placement store in step with the round open on the server. #}
+  <div x-data x-init="$store.round.sync({{ open_round.id if open_round else 'null' }}, {{ open_round.max_points if open_round else 0 }})"></div>
+
+  {% include "partials/round_panel.html" %}
+  {% include "partials/player_grid.html" %}
+  {% if players %}{% include "partials/history_table.html" %}{% endif %}
+</div>

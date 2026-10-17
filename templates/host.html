@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="mx-auto max-w-7xl px-4 pb-20">
+  <header class="flex flex-wrap items-center gap-3 py-6">
+    <div class="flex flex-1 items-center gap-3">
+      <div class="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-primary to-secondary text-primary-content shadow-lg shadow-primary/30">
+        <i data-lucide="trophy" class="size-6"></i>
+      </div>
+      <div>
+        <h1 class="font-display text-2xl font-extrabold tracking-tight md:text-3xl">{{ config.GAME_TITLE }}</h1>
+        <p class="text-xs uppercase tracking-widest opacity-50">Host control panel</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" class="btn btn-sm btn-outline btn-secondary" onclick="openScoreboard()">
+        <i data-lucide="tv" class="size-4"></i> Scoreboard
+      </button>
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-sm btn-ghost btn-square" aria-label="More">
+          <i data-lucide="ellipsis-vertical" class="size-5"></i>
+        </div>
+        <ul tabindex="0" class="menu dropdown-content z-30 mt-2 w-52 rounded-box border border-base-content/10 bg-base-200 p-2 shadow-2xl">
+          <li><a href="/export.csv"><i data-lucide="download" class="size-4"></i> Export CSV</a></li>
+          <li><button type="button" class="text-error" onclick="document.getElementById('reset-modal').showModal()">
+            <i data-lucide="rotate-ccw" class="size-4"></i> Reset…
+          </button></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main hx-target="#board" hx-swap="outerHTML" class="space-y-6">
+    <form hx-post="/players"
+          hx-on::after-request="if (event.detail.successful) { this.reset(); this.names.focus(); }"
+          class="glass-card flex items-center gap-3 rounded-2xl p-3 pl-5">
+      <i data-lucide="user-plus" class="size-5 shrink-0 opacity-60"></i>
+      <textarea name="names" rows="1" autofocus x-data
+                placeholder="Add players: type a name and press Enter, or paste a list (commas or new lines)"
+                @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $el.form.requestSubmit(); }"
+                class="textarea textarea-ghost min-h-0 flex-1 resize-none px-0 text-base leading-7 focus:bg-transparent focus:outline-none"></textarea>
+      <button class="btn btn-primary btn-sm">Add</button>
+    </form>
+
+    {% include "partials/board.html" %}
+  </main>
+</div>
+
+<dialog id="scoreboard-modal" class="modal scoreboard-modal">
+  <div class="modal-box scoreboard-bg relative">
+    <div class="absolute right-3 top-3 flex gap-1">
+      <button type="button" class="btn btn-ghost btn-sm btn-square" title="Full screen"
+              onclick="toggleScoreboardFullscreen()">
+        <i data-lucide="maximize-2" class="size-4"></i>
+      </button>
+      <form method="dialog"><button class="btn btn-ghost btn-sm btn-square" title="Close (Esc)">
+        <i data-lucide="x" class="size-5"></i>
+      </button></form>
+    </div>
+    <header class="mb-6 text-center">
+      <p class="text-sm font-semibold uppercase tracking-[0.35em] text-primary">Live standings</p>
+      <h2 class="mt-2 font-display text-4xl font-extrabold tracking-tight md:text-6xl">{{ config.GAME_TITLE }}</h2>
+    </header>
+    {# Polls only while the popup is open; "refresh" is fired when it opens. #}
+    <div id="scoreboard-live"
+         hx-get="/partials/leaderboard"
+         hx-trigger="refresh, every 2s [document.getElementById('scoreboard-modal').open]"
+         hx-vals="js:{v: leaderboardVersion()}"
+         hx-target="this" hx-swap="innerHTML">
+      {% include "partials/leaderboard.html" %}
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<dialog id="reset-modal" class="modal" hx-target="#board" hx-swap="outerHTML">
+  <div class="modal-box border border-base-content/10">
+    <h3 class="font-display text-xl font-bold">Reset the game?</h3>
+    <p class="py-3 text-sm opacity-70">You can't undo this. Export a CSV first if you want to keep the results.</p>
+    <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+      <form method="dialog"><button class="btn btn-ghost w-full">Cancel</button></form>
+      <button class="btn btn-warning" hx-post="/reset" hx-vals='{"mode": "scores"}'
+              hx-on::after-request="this.closest('dialog').close()">Clear scores, keep players</button>
+      <button class="btn btn-error" hx-post="/reset" hx-vals='{"mode": "all"}'
+              hx-on::after-request="this.closest('dialog').close()">New game</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+{% endblock %}

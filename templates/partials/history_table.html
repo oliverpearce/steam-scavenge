@@ -1,0 +1,71 @@
+<section id="history" class="glass-card rounded-2xl">
+  <div class="flex flex-wrap items-center justify-between gap-2 px-5 pt-4">
+    <h2 class="flex items-center gap-2 font-display text-lg font-bold">
+      <i data-lucide="table-2" class="size-5 opacity-70"></i> Score sheet
+    </h2>
+    <span class="text-xs opacity-50">Click any number to edit it. Changes save when you leave the box.</span>
+  </div>
+  <div class="overflow-x-auto p-2 pb-3">
+    <table class="table table-sm">
+      <thead>
+        <tr class="align-bottom">
+          <th class="min-w-36">Player</th>
+          {% for r in rounds %}
+          <th class="min-w-32">
+            <input name="title" value="{{ r.title or '' }}" placeholder="Round {{ r.number }}" maxlength="80"
+                   class="input input-xs input-ghost w-full px-1 text-sm font-semibold normal-case"
+                   hx-patch="/rounds/{{ r.id }}" hx-trigger="change" hx-swap="none">
+            <div class="flex items-center gap-0.5 font-normal normal-case">
+              <span class="text-[11px] opacity-60">max</span>
+              <input name="max_points" type="number" min="0" value="{{ r.max_points }}"
+                     class="input input-xs input-ghost w-12 px-1 text-center"
+                     hx-patch="/rounds/{{ r.id }}" hx-trigger="change" hx-swap="none">
+              <button type="button" class="btn btn-ghost btn-xs btn-square" title="Recalculate points from finishing places"
+                      hx-post="/rounds/{{ r.id }}/recalc"
+                      hx-confirm="Recalculate {{ r.label }} from finishing places? Manual edits in this round will be overwritten.">
+                <i data-lucide="refresh-cw" class="size-3"></i>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs btn-square text-error/70 hover:text-error" title="Delete round"
+                      hx-delete="/rounds/{{ r.id }}" hx-confirm="Delete {{ r.label }} and all of its points?">
+                <i data-lucide="trash-2" class="size-3"></i>
+              </button>
+            </div>
+          </th>
+          {% endfor %}
+          <th class="min-w-20">Bonus</th>
+          <th class="min-w-20 text-right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in players %}
+        <tr class="hover">
+          <td>
+            <div class="flex items-center gap-2 font-medium">
+              <span class="size-2.5 shrink-0 rounded-full" style="background: {{ p.color }}"></span>
+              <span class="truncate">{{ p.name }}</span>
+            </div>
+          </td>
+          {% for r in rounds %}
+          {% set s = cells.get((p.id, r.id)) %}
+          <td>
+            <div class="flex items-center gap-1">
+              <input type="number" name="points" value="{{ s.points if s else 0 }}"
+                     class="input input-xs input-ghost w-14 text-center tabular-nums"
+                     hx-patch="/scores/{{ r.id }}/{{ p.id }}" hx-trigger="change" hx-swap="none">
+              {% if s and s.place %}<span class="text-[11px] opacity-50">{{ s.place|ordinal }}</span>{% endif %}
+            </div>
+          </td>
+          {% endfor %}
+          <td>{% include "partials/bonus_input.html" %}</td>
+          <td class="text-right font-display text-lg font-bold tabular-nums">
+            <span id="total-{{ p.id }}">{{ totals[p.id] }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if not rounds %}
+    <p class="px-3 pt-2 text-sm opacity-50">Rounds show up here as columns once you confirm them.</p>
+    {% endif %}
+  </div>
+</section>

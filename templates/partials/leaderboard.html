@@ -1,0 +1,35 @@
+<div id="lb" data-version="{{ version }}" data-rounds="{{ rounds|length }}" class="mx-auto max-w-4xl">
+  <div class="mb-8 flex flex-wrap justify-center gap-2">
+    {% if open_round %}
+      <span class="badge badge-primary badge-lg gap-2 px-4 py-4 text-base"><span class="live-dot"></span> Round {{ open_round.number }} in progress</span>
+    {% elif rounds %}
+      <span class="badge badge-lg border-base-content/20 bg-base-200/70 px-4 py-4 text-base">After {{ rounds|length }} round{{ 's' if rounds|length != 1 }}</span>
+    {% endif %}
+  </div>
+
+  {% if ranked %}
+  <ol class="space-y-3 md:space-y-4">
+    {% for rank, p, total in ranked %}
+    {% set last = last_scores.get(p.id) %}
+    <li class="lb-row {{ 'rank-%d' % rank if rank <= 3 }} animate__animated animate__fadeInUp"
+        style="--player: {{ p.color }}; animation-delay: {{ loop.index0 * 70 }}ms">
+      <div class="rank-badge">{{ rank }}</div>
+      <div class="avatar placeholder hidden shrink-0 sm:inline-flex">
+        <div class="w-14 rounded-full text-xl font-bold text-neutral-900 md:w-16" style="background: {{ p.color }}">
+          <span>{{ p.name|initials }}</span>
+        </div>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="truncate font-display text-2xl font-bold md:text-4xl">{{ p.name }}</div>
+        {% if last and last.place %}
+          <div class="text-sm opacity-60 md:text-base">{{ last_round.label }}: {{ last.place|ordinal }} · +{{ last.points }}</div>
+        {% endif %}
+      </div>
+      <div class="font-display text-4xl font-extrabold tabular-nums md:text-6xl">{{ total }}</div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="py-24 text-center font-display text-3xl opacity-50">Waiting for contestants…</p>
+  {% endif %}
+</div>

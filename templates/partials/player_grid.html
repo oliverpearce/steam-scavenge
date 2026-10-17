@@ -1,0 +1,103 @@
+<section id="player-grid" {% if oob %}hx-swap-oob="true"{% endif %}>
+{% if players %}
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+  {% for p in players %}
+    <div x-data="{ editing: false }"
+         data-player-id="{{ p.id }}" data-player-name="{{ p.name }}"
+         class="player-tile relative rounded-2xl"
+         style="--player: {{ p.color }}"
+         :class="{
+           'is-pickable': $store.round.isActive(),
+           'is-placed': $store.round.placeOf({{ p.id }}),
+         }"
+         @click="if ($store.round.isActive() && !editing) $store.round.toggle({{ p.id }})">
+
+      <div x-cloak x-show="$store.round.placeOf({{ p.id }})" x-transition.scale.origin.center
+           class="place-badge">
+        <span class="text-2xl leading-none" x-text="$store.round.medal($store.round.placeOf({{ p.id }}))"></span>
+        <span class="text-xs font-bold" x-text="'+' + $store.round.pointsFor($store.round.placeOf({{ p.id }}))"></span>
+      </div>
+
+      <div class="flex items-start gap-3 p-4 pb-2">
+        <div class="avatar placeholder shrink-0">
+          <div class="w-11 rounded-full font-bold text-neutral-900" style="background: {{ p.color }}">
+            <span>{{ p.name|initials }}</span>
+          </div>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div x-show="!editing" class="truncate font-display text-lg font-bold leading-tight" title="Double-click to rename"
+               @dblclick.stop="editing = true; $nextTick(() => $refs.name.select())">{{ p.name }}</div>
+          <input x-cloak x-show="editing" x-ref="name" name="name" value="{{ p.name }}" maxlength="80"
+                 class="input input-sm input-bordered w-full"
+                 hx-patch="/players/{{ p.id }}" hx-trigger="change" hx-target="#board" hx-swap="outerHTML"
+                 @click.stop @blur="editing = false"
+                 @keydown.enter.prevent="$el.blur()"
+                 @keydown.escape="$el.value = $el.defaultValue; editing = false">
+          <div class="text-xs opacity-50">Rank #{{ rank_of[p.id] }}</div>
+        </div>
+
+        <div class="dropdown dropdown-end" @click.stop>
+          <div tabindex="0" role="button" class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100" aria-label="Player options">
+            <i data-lucide="ellipsis" class="size-4"></i>
+          </div>
+          <div tabindex="0" class="dropdown-content z-30 mt-1 w-56 rounded-box border border-base-content/10 bg-base-200 p-3 shadow-2xl">
+            <button type="button" class="btn btn-ghost btn-sm w-full justify-start"
+                    @click="editing = true; $nextTick(() => $refs.name.select()); document.activeElement.blur()">
+              <i data-lucide="pencil" class="size-4"></i> Rename
+            </button>
+            <p class="mb-2 mt-3 text-xs uppercase tracking-wider opacity-50">Colour</p>
+            <div class="grid grid-cols-6 gap-2">
+              {% for c in palette %}
+              <button type="button" class="size-6 rounded-full ring-offset-2 ring-offset-base-200 {{ 'ring-2 ring-white' if c == p.color }}"
+                      style="background: {{ c }}" aria-label="Colour {{ c }}"
+                      hx-patch="/players/{{ p.id }}" hx-vals='{"color": "{{ c }}"}' hx-target="#board" hx-swap="outerHTML"></button>
+              {% endfor %}
+            </div>
+            <div class="divider my-2"></div>
+            <button type="button" class="btn btn-ghost btn-sm w-full justify-start text-error"
+                    hx-delete="/players/{{ p.id }}" hx-target="#board" hx-swap="outerHTML"
+                    hx-confirm="Remove {{ p.name }} and all their points?">
+              <i data-lucide="trash-2" class="size-4"></i> Remove player
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4">
+        <span class="font-display text-5xl font-extrabold tabular-nums leading-none">{{ totals[p.id] }}</span>
+        <span class="ml-1 text-sm opacity-50">pts</span>
+      </div>
+
+      <div class="flex items-center gap-1 p-3 pt-2" @click.stop>
+        <button type="button" class="btn btn-sm btn-ghost flex-1" aria-label="Minus one"
+                hx-post="/players/{{ p.id }}/adjust" hx-vals='{"amount": -1}' hx-swap="none">
+          <i data-lucide="minus" class="size-4"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-ghost flex-1" aria-label="Plus one"
+                hx-post="/players/{{ p.id }}/adjust" hx-vals='{"amount": 1}' hx-swap="none">
+          <i data-lucide="plus" class="size-4"></i>
+        </button>
+        <div class="dropdown dropdown-top dropdown-end flex-1">
+          <div tabindex="0" role="button" class="btn btn-sm btn-ghost w-full font-semibold">±&nbsp;pts</div>
+          <form tabindex="0" class="dropdown-content z-30 mb-1 w-60 space-y-2 rounded-box border border-base-content/10 bg-base-200 p-3 shadow-2xl"
+                hx-post="/players/{{ p.id }}/adjust" hx-swap="none">
+            <p class="text-xs uppercase tracking-wider opacity-50">Adjust {{ p.name }}</p>
+            <input type="number" name="amount" required placeholder="e.g. 5 or -3" class="input input-sm input-bordered w-full">
+            <input type="text" name="note" maxlength="120" placeholder="Note (optional)" class="input input-sm input-bordered w-full">
+            <button class="btn btn-primary btn-sm w-full">Apply</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+{% else %}
+  <div class="glass-card grid place-items-center gap-3 rounded-2xl px-6 py-16 text-center">
+    <div class="grid size-16 place-items-center rounded-full bg-primary/15 text-primary">
+      <i data-lucide="users" class="size-8"></i>
+    </div>
+    <h2 class="font-display text-2xl font-bold">No players yet</h2>
+    <p class="max-w-md text-sm opacity-60">Type names into the box above. You can paste a whole list at once, like <code class="rounded bg-base-300 px-1">Alice, Bob, Cara</code>.</p>
+  </div>
+{% endif %}
+</section>

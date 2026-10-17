@@ -1,0 +1,8 @@
+{# Out-of-band refresh after a score edit: tiles, totals and bonus cells, but not the cell being typed in. #}
+{% with oob = true %}
+  {% include "partials/player_grid.html" %}
+  {% for p in players %}
+    <span id="total-{{ p.id }}" hx-swap-oob="true">{{ totals[p.id] }}</span>
+    {% include "partials/bonus_input.html" %}
+  {% endfor %}
+{% endwith %}

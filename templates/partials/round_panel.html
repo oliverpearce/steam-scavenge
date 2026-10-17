@@ -1,0 +1,63 @@
+<section id="round-panel">
+{% if open_round %}
+  <div x-data class="round-live relative overflow-hidden rounded-2xl border border-primary/40 p-5 shadow-2xl shadow-primary/10 animate__animated animate__fadeIn">
+    <div class="flex flex-wrap items-center gap-3">
+      <span class="badge badge-primary badge-lg gap-2 font-semibold"><span class="live-dot"></span> Round {{ open_round.number }}</span>
+      <h2 class="font-display text-xl font-bold">Click players in finishing order</h2>
+      <label class="ml-auto flex items-center gap-2 text-sm">
+        <span class="opacity-70">1st place gets</span>
+        <input type="number" min="0" x-model.number="$store.round.max"
+               class="input input-sm input-bordered w-20 text-center text-base font-bold">
+        <span class="opacity-70">pts</span>
+      </label>
+    </div>
+
+    <div class="mt-4 flex min-h-11 flex-wrap items-center gap-2">
+      <template x-for="pick in $store.round.placed()" :key="pick.id">
+        <span class="pick-chip animate__animated animate__bounceIn">
+          <span x-text="$store.round.medal(pick.place)"></span>
+          <span class="font-semibold" x-text="$store.round.nameOf(pick.id)"></span>
+          <span class="text-success" x-text="'+' + $store.round.pointsFor(pick.place)"></span>
+        </span>
+      </template>
+      <span x-show="!$store.round.picks.length" class="text-sm opacity-60">
+        No one placed yet. Click a player tile below. Click it again to unplace.
+      </span>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      <button type="button" class="btn btn-sm"
+              :class="$store.round.tieNext ? 'btn-warning' : 'btn-outline'"
+              :disabled="!$store.round.picks.length"
+              @click="$store.round.tieNext = !$store.round.tieNext">
+        <i data-lucide="equal" class="size-4"></i>
+        <span x-text="$store.round.tieNext ? 'Next pick ties' : 'Tie with previous'"></span>
+      </button>
+      <button type="button" class="btn btn-sm btn-ghost" :disabled="!$store.round.picks.length" @click="$store.round.undo()">
+        <i data-lucide="undo-2" class="size-4"></i> Undo
+      </button>
+      <div class="ml-auto flex gap-2">
+        <button type="button" class="btn btn-sm btn-ghost" hx-delete="/rounds/{{ open_round.id }}"
+                hx-confirm="Cancel this round? Nothing will be saved.">Cancel</button>
+        <button type="button" class="btn btn-sm btn-primary" :disabled="!$store.round.picks.length" @click="$store.round.confirm()">
+          <i data-lucide="check" class="size-4"></i> Confirm round
+        </button>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="glass-card flex flex-wrap items-center gap-4 rounded-2xl p-4 pl-5">
+    <div>
+      <p class="font-display text-lg font-bold">
+        {% if rounds %}{{ rounds|length }} round{{ 's' if rounds|length != 1 }} played{% else %}Ready when you are{% endif %}
+      </p>
+      <p class="text-sm opacity-60">
+        {% if players %}Start a round, then click players in the order they finish.{% else %}Add a few players to begin.{% endif %}
+      </p>
+    </div>
+    <button class="btn btn-primary ml-auto shadow-lg shadow-primary/30" hx-post="/rounds" {% if not players %}disabled{% endif %}>
+      <i data-lucide="play" class="size-4"></i> Start round {{ next_round_number }}
+    </button>
+  </div>
+{% endif %}
+</section>
