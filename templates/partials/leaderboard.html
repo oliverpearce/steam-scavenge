@@ -3,7 +3,8 @@
     {% if open_round %}
       <span class="badge badge-primary badge-lg gap-2 px-4 py-4 text-base"><span class="live-dot"></span> Round {{ open_round.number }} in progress</span>
       {% set task = task_by_id.get(open_round.task_id) %}
-      {% if open_round.gimmick %}
+      {% if not tasks_enabled %}
+      {% elif open_round.gimmick %}
         {% set gimmick = gimmick_by_id.get(open_round.gimmick_task_id) %}
         <div class="task-card gimmick w-full text-center">
           <span class="cat-badge xl" style="--cat: {{ category_color('gimmick') }}">🎭 gimmick</span>

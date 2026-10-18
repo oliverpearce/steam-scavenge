@@ -15,6 +15,7 @@
             <input name="title" value="{{ r.title or '' }}" placeholder="Round {{ r.number }}" maxlength="80"
                    class="input input-xs input-ghost w-full px-1 text-sm font-semibold normal-case"
                    hx-patch="/rounds/{{ r.id }}" hx-trigger="change" hx-swap="none">
+            {% if tasks_enabled %}
             {% set round_task = gimmick_by_id.get(r.gimmick_task_id) if r.gimmick else task_by_id.get(r.task_id) %}
             <div class="px-1 py-0.5" title="{{ round_task.text if round_task else ('Gimmick round' if r.gimmick else '') }}">
               {% if r.gimmick %}
@@ -23,6 +24,7 @@
                 <span class="cat-badge" style="--cat: {{ category_color(round_task.category) }}">{{ round_task.category }}</span>
               {% endif %}
             </div>
+            {% endif %}
             <div class="flex items-center gap-0.5 font-normal normal-case">
               <span class="px-1 text-[11px] opacity-60">1st: {{ r.max_points }}</span>
               <button type="button" class="btn btn-ghost btn-xs btn-square" title="Recalculate points from finishing places"

@@ -41,6 +41,7 @@ def app(tmp_path):
 def client(app):
     client = app.test_client()
     client.post("/players", data={"names": "Alice, Bob"})
+    client.post("/settings/tasks", data={"enabled": "1"})  # tasks start off
     return client
 
 

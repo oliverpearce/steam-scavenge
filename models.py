@@ -41,6 +41,12 @@ class Round(db.Model):
         return self.title or f"Round {self.number}"
 
 
+class Setting(db.Model):
+    """Game-wide switches, e.g. tasks_enabled = "1" / "0"."""
+    key = db.Column(db.String(40), primary_key=True)
+    value = db.Column(db.String(200), nullable=False)
+
+
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey("player.id"), nullable=False)

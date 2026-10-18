@@ -33,6 +33,10 @@ Then open **http://127.0.0.1:5000**. After the first setup, you only need to act
 | `pytest` | Run the tests |
 | `deactivate` | Leave the venv |
 
+## Playing without tasks
+
+Tasks start **off**, so you just play rounds and points. Flip the **Tasks** switch (top right) to turn them on. While it's off, no tasks are rolled, and none are shown on the host page, the scoreboard or past rounds. If you turn it back on mid-round, the open round gets a task.
+
 ## File structure
 
 ```

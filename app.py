@@ -17,7 +17,7 @@ from datetime import datetime
 from flask import Flask, Response, abort, current_app, render_template, request
 from sqlalchemy import func, inspect, text
 
-from models import PALETTE, Player, Round, Score, db
+from models import PALETTE, Player, Round, Score, Setting, db
 from scoring import last_place, places_for_round, points_for_place, rank_totals
 from sessions import delete_session, list_sessions, load_session, save_session
 from tasks import (
@@ -84,7 +84,7 @@ def create_app(test_config=None):
     app.add_template_filter(initials)
     app.add_template_filter(nice_datetime)
     app.add_template_global(category_color)
-    app.context_processor(lambda: {"palette": PALETTE})
+    app.context_processor(lambda: {"palette": PALETTE, "tasks_enabled": tasks_enabled()})
     register_routes(app)
     return app
 
@@ -107,6 +107,12 @@ def add_missing_columns():
 # ---------------------------------------------------------------------------
 # View-model helpers
 # ---------------------------------------------------------------------------
+
+def tasks_enabled():
+    """Off means rounds are just placements and points: no tasks are rolled or shown."""
+    setting = db.session.get(Setting, "tasks_enabled")
+    return setting is not None and setting.value == "1"
+
 
 def next_round_number():
     return (db.session.query(func.max(Round.number)).scalar() or 0) + 1
@@ -241,6 +247,7 @@ def leaderboard_context():
         [[r.id, r.label] for r in ctx["rounds"]],
         [open_round.id, open_round.task_id, open_round.gimmick, open_round.gimmick_task_id]
         if open_round else None,
+        tasks_enabled(),
     ])
     ctx.update(
         last_round=last_round,
@@ -388,8 +395,9 @@ def register_routes(app):
             return board_response(toast="Add some players first", kind="warning")
 
         rnd = Round(number=next_round_number(), max_points=player_count - 1, status="open")
-        roll_task(rnd, "main")
-        roll_task(rnd, "backup")
+        if tasks_enabled():
+            roll_task(rnd, "main")
+            roll_task(rnd, "backup")
         db.session.add(rnd)
         db.session.commit()
         return board_response()
@@ -582,6 +590,19 @@ def register_routes(app):
         return score_update_response()
 
     # --- Game --------------------------------------------------------------
+
+    @app.post("/settings/tasks")
+    def toggle_tasks():
+        enabled = bool(request.form.get("enabled"))
+        setting = db.session.get(Setting, "tasks_enabled") or Setting(key="tasks_enabled")
+        setting.value = "1" if enabled else "0"
+        db.session.add(setting)
+        open_round = Round.query.filter_by(status="open").first()
+        if enabled and open_round and open_round.task_id is None:  # round started with tasks off
+            roll_task(open_round, "main")
+            roll_task(open_round, "backup")
+        db.session.commit()
+        return board_response(toast="Tasks on" if enabled else "Tasks off: just rounds and points", kind="info")
 
     @app.get("/export.csv")
     def export_csv():

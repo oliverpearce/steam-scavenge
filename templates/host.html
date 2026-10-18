@@ -20,6 +20,12 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
+      <label class="mr-1 flex cursor-pointer items-center gap-2 text-sm" title="Turn off to just play rounds and points">
+        <span class="opacity-70">Tasks</span>
+        <input type="checkbox" name="enabled" value="1" class="toggle toggle-primary toggle-sm"
+               {% if tasks_enabled %}checked{% endif %}
+               hx-post="/settings/tasks" hx-trigger="change" hx-target="#board" hx-swap="outerHTML">
+      </label>
       <button type="button" class="btn btn-sm btn-ghost" onclick="document.getElementById('save-modal').showModal()">
         <i data-lucide="save" class="size-4"></i> Save
       </button>

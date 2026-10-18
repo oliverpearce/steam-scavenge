@@ -89,6 +89,7 @@ def test_reset_keeps_players_when_asked(client, app):
 
 def test_round_history_shows_task_category(client, app):
     client.post("/players", data={"names": "Alice, Bob"})
+    client.post("/settings/tasks", data={"enabled": "1"})
     ids = player_ids(app)
     client.post("/rounds")
     with app.app_context():
@@ -130,3 +131,32 @@ def test_cannot_save_session_mid_round(client):
     client.post("/rounds")
     response = client.post("/sessions", data={"name": "Oops"})
     assert "open round" in json.loads(response.headers["HX-Trigger"])["toast"]["message"]
+
+
+def test_tasks_are_off_by_default(client, app):
+    client.post("/players", data={"names": "Alice, Bob"})
+    client.post("/rounds")
+    with app.app_context():
+        assert Round.query.filter_by(status="open").one().task_id is None
+
+
+def test_tasks_can_be_turned_off(client, app):
+    client.post("/players", data={"names": "Alice, Bob"})
+    ids = player_ids(app)
+    client.post("/settings/tasks", data={"enabled": "1"})
+    client.post("/rounds")
+    with app.app_context():
+        round_id = Round.query.filter_by(status="open").one().id
+    client.post(f"/rounds/{round_id}/task", data={"slot": "main", "task_id": "1"})
+    client.post(f"/rounds/{round_id}/confirm", data={"order": json.dumps([{"id": ids["Bob"]}])})
+
+    client.post("/settings/tasks", data={})  # unchecked toggle sends no "enabled"
+    assert "Get a Game Over" not in client.get("/").get_data(as_text=True)  # played tasks are hidden too
+    client.post("/rounds")
+    with app.app_context():
+        rnd = Round.query.filter_by(status="open").one()
+        assert rnd.task_id is None and rnd.backup_task_id is None
+
+    client.post("/settings/tasks", data={"enabled": "1"})  # turning back on rolls for the open round
+    with app.app_context():
+        assert Round.query.filter_by(status="open").one().task_id is not None

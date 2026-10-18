@@ -13,7 +13,8 @@
     </div>
 
     {# --- Task ---------------------------------------------------------- #}
-    {% if open_round.gimmick %}
+    {% if not tasks_enabled %}
+    {% elif open_round.gimmick %}
       {% set gimmick = gimmick_by_id.get(open_round.gimmick_task_id) %}
       <div class="task-card gimmick mt-4">
         <div class="flex flex-wrap items-center gap-2">
@@ -135,11 +136,13 @@
         {% if rounds %}{{ rounds|length }} round{{ 's' if rounds|length != 1 }} played{% else %}Ready when you are{% endif %}
       </p>
       <p class="text-sm opacity-60">
-        {% if players %}Start a round to roll a task, then click players in the order they finish.{% else %}Add a few players to begin.{% endif %}
+        {% if not players %}Add a few players to begin.
+        {% elif tasks_enabled %}Start a round to roll a task, then click players in the order they finish.
+        {% else %}Start a round, then click players in the order they finish.{% endif %}
       </p>
     </div>
     <button class="btn btn-primary ml-auto shadow-lg shadow-primary/30" hx-post="/rounds" {% if not players %}disabled{% endif %}>
-      <i data-lucide="dices" class="size-4"></i> Start round {{ next_round_number }}
+      <i data-lucide="{{ 'dices' if tasks_enabled else 'play' }}" class="size-4"></i> Start round {{ next_round_number }}
     </button>
   </div>
 {% endif %}

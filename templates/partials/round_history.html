@@ -30,6 +30,7 @@
         {% if loop.first %}<span class="badge badge-primary badge-xs">latest</span>{% endif %}
       </div>
 
+      {% if tasks_enabled %}
       <div class="mt-2">
         {% if r.task %}
         <span class="tooltip tooltip-bottom round-tip" data-tip="{{ r.task }}{{ '  ⚠ ' ~ r.rule if r.rule }}">
@@ -41,6 +42,7 @@
         <span class="text-xs opacity-40">No task recorded</span>
         {% endif %}
       </div>
+      {% endif %}
 
       {% if r.results %}
       <p x-show="!showPoints" class="mt-2 truncate text-sm opacity-70">
