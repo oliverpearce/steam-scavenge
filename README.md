@@ -1,10 +1,10 @@
 # steam-scavenge
 
-A web app and poitns tracker for running a steam library game show. It rolls random tasks for each round, scores players by finishing order, shows a live scoreboard, and saves each session.
+A web app and points tracker for running a steam library game show. It rolls random tasks (and backups) for each round, scores players by finishing order, shows a live scoreboard, and has the ability to save and reload sessions.
 
 [Rules!!!!](https://docs.google.com/presentation/d/1u3qphJGUw1EZpYNN_z6_ACk6JLpGf2zYq8NUKR6RNqc/edit?usp=sharing)
 
-idea stolen from petrichor and cjya, was just to make it easier to host for frens :)
+idea stolen from [petrichor](https://www.youtube.com/@petrichorcolton) and [cjya](https://www.youtube.com/@cjya), was just to make it easier to host for frens :)
 
 NOTE: THE WEB VERSION IS DIFFERENT, BUT SHOULD WORK BETTER! THE FLASK APP IS OUTDATED LOL
 
