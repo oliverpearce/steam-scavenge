@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>steam scavenge</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="static/tailwind-config.js"></script>
+  <link href="static/app.css" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="static/tasks.js"></script>
+  <script src="static/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+</head>
+<body class="min-h-screen font-sans text-base-content antialiased" x-data="host()">
+<div class="mx-auto max-w-7xl px-4 pb-20">
+  <header class="flex flex-wrap items-center gap-3 py-6">
+    <div class="flex flex-1 items-center gap-3">
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="flex cursor-pointer items-center gap-3 rounded-2xl" title="About">
+          <div class="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-primary to-secondary text-primary-content shadow-lg shadow-primary/30">
+            <i data-lucide="trophy" class="size-6"></i>
+          </div>
+          <h1 class="font-display text-2xl font-extrabold tracking-tight md:text-3xl">steam scavenge</h1>
+        </div>
+        <div tabindex="0" class="dropdown-content z-30 mt-2 w-64 rounded-box border border-base-content/10 bg-base-200 p-4 shadow-2xl">
+          <p class="font-display text-lg font-bold">steam scavenge</p>
+          <p class="text-sm opacity-70">by oliverpearce</p>
+          <a href="https://github.com/oliverpearce/steam-scavenge" target="_blank" rel="noopener"
+             class="btn btn-sm btn-outline mt-3 w-full gap-2">
+            <i data-lucide="github" class="size-4"></i> View on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <label class="mr-1 flex cursor-pointer items-center gap-2 text-sm" title="Turn off to just play rounds and points">
+        <span class="opacity-70">Tasks</span>
+        <input type="checkbox" class="toggle toggle-primary toggle-sm"
+               :checked="game.tasksEnabled" @change="setTasksEnabled($el.checked)">
+      </label>
+      <button type="button" class="btn btn-sm btn-ghost" @click="openSaveModal()">
+        <i data-lucide="save" class="size-4"></i> Save
+      </button>
+      <button type="button" class="btn btn-sm btn-ghost" @click="$refs.sessionFile.click()" title="Open a saved session file">
+        <i data-lucide="folder-open" class="size-4"></i> Open
+      </button>
+      <input type="file" accept=".json,application/json" class="hidden" x-ref="sessionFile" @change="openSessionFile($el)">
+      <button type="button" class="btn btn-sm btn-ghost" @click="openTaskManager()">
+        <i data-lucide="list-checks" class="size-4"></i> Tasks
+      </button>
+      <button type="button" class="btn btn-sm btn-outline btn-secondary" onclick="document.getElementById('scoreboard-modal').showModal()">
+        <i data-lucide="tv" class="size-4"></i> Scoreboard
+      </button>
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-sm btn-ghost btn-square" aria-label="More">
+          <i data-lucide="ellipsis-vertical" class="size-5"></i>
+        </div>
+        <ul tabindex="0" class="menu dropdown-content z-30 mt-2 w-56 rounded-box border border-base-content/10 bg-base-200 p-2 shadow-2xl">
+          <li><a href="scoreboard.html" target="_blank"><i data-lucide="external-link" class="size-4"></i> Scoreboard in new tab</a></li>
+          <li><button type="button" @click="exportCsv(); closeDropdowns()"><i data-lucide="download" class="size-4"></i> Export CSV</button></li>
+          <li><button type="button" class="text-error" onclick="document.getElementById('reset-modal').showModal()">
+            <i data-lucide="rotate-ccw" class="size-4"></i> Reset…
+          </button></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main class="space-y-6">
+    <!-- ===== Saved session view (after Open) ===== -->
+    <template x-if="session">
+      <div class="space-y-6">
+        <div class="glass-card flex flex-wrap items-center gap-3 rounded-2xl p-4 pl-5">
+          <i data-lucide="folder-open" class="size-5 shrink-0 opacity-60"></i>
+          <p class="min-w-0 flex-1 text-sm opacity-80">Viewing a saved session. Your current game is untouched.</p>
+          <button type="button" class="btn btn-sm btn-ghost" @click="session = null">
+            <i data-lucide="arrow-left" class="size-4"></i> Back to game
+          </button>
+          <button type="button" class="btn btn-sm btn-primary" @click="resumeSession()">
+            <i data-lucide="play" class="size-4"></i> Keep playing this game
+          </button>
+        </div>
+
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary" x-text="session.game_title || 'steam scavenge'"></p>
+          <h2 class="mt-1 font-display text-4xl font-extrabold tracking-tight md:text-5xl" x-text="session.name"></h2>
+          <p class="mt-1 text-sm opacity-60"
+             x-text="`${niceDateTime(session.saved_at)} · ${plural(session.players.length, 'player')} · ${plural(session.rounds.length, 'round')}`"></p>
+        </div>
+
+        <section class="space-y-2">
+          <h2 class="flex items-center gap-2 font-display text-lg font-bold"><i data-lucide="trophy" class="size-5 opacity-70"></i> Final standings</h2>
+          <ol class="space-y-2">
+            <template x-for="p in session.players" :key="p.id">
+              <li class="lb-row lb-row-compact" :class="p.rank <= 3 && `rank-${p.rank}`" :style="`--player: ${p.color}`">
+                <div class="rank-badge" x-text="p.rank"></div>
+                <div class="min-w-0 flex-1 truncate font-display text-xl font-bold md:text-2xl" x-text="p.name"></div>
+                <span x-show="p.bonus" class="text-xs opacity-60" x-text="`bonus ${signed(p.bonus)}`"></span>
+                <div class="font-display text-3xl font-extrabold tabular-nums" x-text="p.total"></div>
+              </li>
+            </template>
+          </ol>
+        </section>
+      </div>
+    </template>
+
+    <!-- ===== Current game ===== -->
+    <div x-show="!session" class="space-y-6">
+      <form @submit.prevent="addPlayers($refs.names)" class="glass-card flex items-center gap-3 rounded-2xl p-3 pl-5">
+        <i data-lucide="user-plus" class="size-5 shrink-0 opacity-60"></i>
+        <textarea x-ref="names" rows="1" autofocus
+                  placeholder="Add players: type a name and press Enter, or paste a list (commas or new lines)"
+                  @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); addPlayers($el); }"
+                  class="textarea textarea-ghost min-h-0 flex-1 resize-none px-0 text-base leading-7 focus:bg-transparent focus:outline-none"></textarea>
+        <button class="btn btn-primary btn-sm">Add</button>
+      </form>
+
+      <!-- Round panel -->
+      <section>
+        <template x-if="view.openRound">
+          <div class="round-live relative rounded-2xl border border-primary/40 p-5 shadow-2xl shadow-primary/10">
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="badge badge-primary badge-lg gap-2 font-semibold"><span class="live-dot"></span> <span x-text="`Round ${view.openRound.number}`"></span></span>
+              <p class="ml-auto text-sm opacity-70">
+                Last place gets <span class="font-bold text-base-content">0</span>, +1 for each place up.
+                Unclicked players count as last.
+              </p>
+            </div>
+
+            <!-- Gimmick -->
+            <template x-if="game.tasksEnabled && view.openRound.gimmick">
+              <div class="task-card gimmick mt-4">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-2xl leading-none">🎭</span>
+                  <span class="cat-badge lg" style="--cat: #fbbf24">gimmick</span>
+                  <div class="ml-auto flex flex-wrap gap-1">
+                    <button type="button" class="btn btn-sm btn-ghost gap-1" title="Hide or show this on screen (for streaming)" onclick="toggleHidden('main')">
+                      <span class="secret-main inline-flex items-center gap-1"><i data-lucide="eye-off" class="size-4"></i> Hide</span>
+                      <span class="masked-main items-center gap-1"><i data-lucide="eye" class="size-4"></i> Show</span>
+                    </button>
+                    <template x-if="banks.gimmicks.length">
+                      <div class="flex gap-1">
+                        <button type="button" class="btn btn-sm btn-ghost gap-1" title="Roll a different gimmick" @click="reroll('gimmick')">
+                          <i data-lucide="dices" class="size-4"></i> Reroll
+                        </button>
+                        <button type="button" class="btn btn-sm btn-ghost gap-1" title="Choose a specific one" @click="openPicker('gimmick')">
+                          <i data-lucide="list" class="size-4"></i> Pick
+                        </button>
+                      </div>
+                    </template>
+                    <button type="button" class="btn btn-sm btn-outline" @click="toggleGimmick()">
+                      <i data-lucide="undo-2" class="size-4"></i> Back to task
+                    </button>
+                  </div>
+                </div>
+                <div class="secret-main">
+                  <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-3xl"
+                     x-text="view.gimmickTask ? view.gimmickTask.text : 'Gimmick round: run it your way.'"></p>
+                  <template x-if="view.gimmickTask && view.gimmickTask.rule">
+                    <p class="task-rule mt-2"><i data-lucide="triangle-alert" class="size-4 shrink-0"></i> <span x-text="view.gimmickTask.rule"></span></p>
+                  </template>
+                </div>
+                <p class="masked-main mt-3 items-center gap-2 font-display text-2xl font-bold opacity-40 md:text-3xl">
+                  <i data-lucide="eye-off" class="size-5 shrink-0"></i> Hidden
+                </p>
+                <p class="mt-3 text-xs opacity-50">Next round goes back to rolled tasks.</p>
+              </div>
+            </template>
+
+            <!-- Main task + backup -->
+            <template x-if="game.tasksEnabled && !view.openRound.gimmick && banks.tasks.length">
+              <div class="task-card mt-4" :style="`--cat: ${view.openTask ? categoryColor(view.openTask.category) : '#94a3b8'}`">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-xs font-semibold uppercase tracking-widest opacity-50">Task</span>
+                  <template x-if="view.openTask">
+                    <span class="secret-main cat-badge lg" :style="`--cat: ${categoryColor(view.openTask.category)}`" x-text="view.openTask.category"></span>
+                  </template>
+                  <div class="ml-auto flex flex-wrap gap-1">
+                    <button type="button" class="btn btn-sm btn-ghost gap-1" title="Hide or show this on screen (for streaming)" onclick="toggleHidden('main')">
+                      <span class="secret-main inline-flex items-center gap-1"><i data-lucide="eye-off" class="size-4"></i> Hide</span>
+                      <span class="masked-main items-center gap-1"><i data-lucide="eye" class="size-4"></i> Show</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-ghost gap-1" title="Roll a different random task" @click="reroll('main')">
+                      <i data-lucide="dices" class="size-4"></i> Reroll
+                    </button>
+                    <button type="button" class="btn btn-sm btn-ghost gap-1" title="Choose a specific one" @click="openPicker('main')">
+                      <i data-lucide="list" class="size-4"></i> Pick
+                    </button>
+                    <button type="button" class="btn btn-sm btn-ghost gap-1 text-accent" title="Make this a gimmick round" @click="toggleGimmick()">
+                      <i data-lucide="sparkles" class="size-4"></i> Gimmick
+                    </button>
+                  </div>
+                </div>
+                <div class="secret-main">
+                  <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-3xl"
+                     x-text="view.openTask ? view.openTask.text : 'No task selected. Reroll or pick one.'"></p>
+                  <template x-if="view.openTask && view.openTask.rule">
+                    <p class="task-rule mt-2"><i data-lucide="triangle-alert" class="size-4 shrink-0"></i> <span x-text="view.openTask.rule"></span></p>
+                  </template>
+                </div>
+                <p class="masked-main mt-3 items-center gap-2 font-display text-2xl font-bold opacity-40 md:text-3xl">
+                  <i data-lucide="eye-off" class="size-5 shrink-0"></i> Hidden
+                </p>
+
+                <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-base-content/10 pt-3">
+                  <span class="text-xs font-semibold uppercase tracking-widest opacity-50">Backup</span>
+                  <template x-if="view.backupTask">
+                    <span class="secret-backup cat-badge" :style="`--cat: ${categoryColor(view.backupTask.category)}`" x-text="view.backupTask.category"></span>
+                  </template>
+                  <span class="secret-backup min-w-0 flex-1 text-sm opacity-80">
+                    <span x-text="view.backupTask ? view.backupTask.text : 'None'"></span>
+                    <span x-show="view.backupTask && view.backupTask.rule" class="text-warning" x-text="`· ${view.backupTask?.rule}`"></span>
+                  </span>
+                  <p class="masked-backup min-w-0 flex-1 items-center gap-2 text-sm opacity-40">
+                    <i data-lucide="eye-off" class="size-4 shrink-0"></i> Hidden
+                  </p>
+                  <div class="flex flex-wrap gap-1">
+                    <button type="button" class="btn btn-xs btn-ghost gap-1" title="Hide or show this on screen (for streaming)" onclick="toggleHidden('backup')">
+                      <span class="secret-backup inline-flex items-center gap-1"><i data-lucide="eye-off" class="size-3.5"></i> Hide</span>
+                      <span class="masked-backup items-center gap-1"><i data-lucide="eye" class="size-3.5"></i> Show</span>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-ghost gap-1" title="Roll a different backup task" @click="reroll('backup')">
+                      <i data-lucide="dices" class="size-3.5"></i> Reroll
+                    </button>
+                    <button type="button" class="btn btn-xs btn-ghost gap-1" title="Choose a specific one" @click="openPicker('backup')">
+                      <i data-lucide="list" class="size-3.5"></i> Pick
+                    </button>
+                    <button type="button" x-show="view.backupTask" class="btn btn-xs btn-ghost gap-1" title="Swap the backup in as the main task" @click="swapTasks()">
+                      <i data-lucide="arrow-up-down" class="size-3.5"></i> Use backup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <template x-if="game.tasksEnabled && !view.openRound.gimmick && !banks.tasks.length">
+              <div class="task-card mt-4 text-sm opacity-70">
+                No tasks yet. Add some with the <b>Tasks</b> button at the top.
+                <button type="button" class="btn btn-xs btn-ghost text-accent" @click="toggleGimmick()">Gimmick round</button>
+              </div>
+            </template>
+
+            <!-- Placement -->
+            <h2 class="mt-5 font-display text-lg font-bold">Click players in finishing order</h2>
+            <div class="mt-2 flex min-h-11 flex-wrap items-center gap-2">
+              <template x-for="pick in placed()" :key="pick.id">
+                <span class="pick-chip animate__animated animate__bounceIn">
+                  <span x-text="medal(pick.place)"></span>
+                  <span class="font-semibold" x-text="nameOf(pick.id)"></span>
+                  <span class="text-success" x-text="'+' + pointsFor(pick.place)"></span>
+                </span>
+              </template>
+              <span x-show="!game.picks.length" class="text-sm opacity-60">
+                No one placed yet. Click a player tile below. Click it again to unplace.
+              </span>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+              <button type="button" class="btn btn-sm" :class="tieNext ? 'btn-warning' : 'btn-outline'"
+                      :disabled="!game.picks.length" @click="tieNext = !tieNext">
+                <i data-lucide="equal" class="size-4"></i>
+                <span x-text="tieNext ? 'Next pick ties' : 'Tie with previous'"></span>
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" :disabled="!game.picks.length" @click="undoPick()">
+                <i data-lucide="undo-2" class="size-4"></i> Undo
+              </button>
+              <div class="ml-auto flex gap-2">
+                <button type="button" class="btn btn-sm btn-ghost" @click="deleteRound(view.openRound)">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary" :disabled="!game.picks.length" @click="confirmRound()">
+                  <i data-lucide="check" class="size-4"></i> Confirm round
+                </button>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template x-if="!view.openRound">
+          <div class="glass-card flex flex-wrap items-center gap-4 rounded-2xl p-4 pl-5">
+            <div>
+              <p class="font-display text-lg font-bold"
+                 x-text="view.doneRounds.length ? `${plural(view.doneRounds.length, 'round')} played` : 'Ready when you are'"></p>
+              <p class="text-sm opacity-60"
+                 x-text="!game.players.length ? 'Add a few players to begin.'
+                   : game.tasksEnabled ? 'Start a round to roll a task, then click players in the order they finish.'
+                   : 'Start a round, then click players in the order they finish.'"></p>
+            </div>
+            <button class="btn btn-primary ml-auto shadow-lg shadow-primary/30" @click="startRound()" :disabled="!game.players.length">
+              <i data-lucide="dices" class="size-4"></i> <span x-text="`Start round ${nextRoundNumber()}`"></span>
+            </button>
+          </div>
+        </template>
+      </section>
+
+      <!-- Player tiles -->
+      <section>
+        <div x-show="game.players.length" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <template x-for="p in game.players" :key="p.id">
+            <div x-data="{ editing: false }" class="player-tile relative rounded-2xl" :style="`--player: ${p.color}`"
+                 :class="{ 'is-pickable': view.openRound, 'is-placed': placeOf(p.id) }"
+                 @click="if (view.openRound && !editing) togglePick(p.id)">
+
+              <div x-cloak x-show="placeOf(p.id)" x-transition.scale.origin.center class="place-badge">
+                <span class="text-2xl leading-none" x-text="medal(placeOf(p.id))"></span>
+                <span class="text-xs font-bold" x-text="'+' + pointsFor(placeOf(p.id))"></span>
+              </div>
+
+              <div class="flex items-start gap-3 p-4 pb-2">
+                <div class="avatar placeholder shrink-0">
+                  <div class="w-11 rounded-full font-bold text-neutral-900" :style="`background: ${p.color}`">
+                    <span x-text="initials(p.name)"></span>
+                  </div>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div x-show="!editing" class="truncate font-display text-lg font-bold leading-tight" title="Double-click to rename"
+                       @dblclick.stop="editing = true; $nextTick(() => $refs.name.select())" x-text="p.name"></div>
+                  <input x-cloak x-show="editing" x-ref="name" :value="p.name" maxlength="80"
+                         class="input input-sm input-bordered w-full"
+                         @change="renamePlayer(p, $el.value)"
+                         @click.stop @blur="editing = false"
+                         @keydown.enter.prevent="$el.blur()"
+                         @keydown.escape="$el.value = p.name; editing = false">
+                  <div class="text-xs opacity-50" x-text="`Rank #${view.rankOf[p.id]}`"></div>
+                </div>
+
+                <div class="dropdown dropdown-end" @click.stop>
+                  <div tabindex="0" role="button" class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100" aria-label="Player options">
+                    <i data-lucide="ellipsis" class="size-4"></i>
+                  </div>
+                  <div tabindex="0" class="dropdown-content z-30 mt-1 w-56 rounded-box border border-base-content/10 bg-base-200 p-3 shadow-2xl">
+                    <button type="button" class="btn btn-ghost btn-sm w-full justify-start"
+                            @click="editing = true; closeDropdowns(); $nextTick(() => $refs.name.select())">
+                      <i data-lucide="pencil" class="size-4"></i> Rename
+                    </button>
+                    <p class="mb-2 mt-3 text-xs uppercase tracking-wider opacity-50">Colour</p>
+                    <div class="grid grid-cols-6 gap-2">
+                      <template x-for="c in PALETTE" :key="c">
+                        <button type="button" class="size-6 rounded-full ring-offset-2 ring-offset-base-200"
+                                :class="c === p.color && 'ring-2 ring-white'"
+                                :style="`background: ${c}`" :aria-label="`Colour ${c}`" @click="p.color = c"></button>
+                      </template>
+                    </div>
+                    <div class="divider my-2"></div>
+                    <button type="button" class="btn btn-ghost btn-sm w-full justify-start text-error" @click="removePlayer(p)">
+                      <i data-lucide="trash-2" class="size-4"></i> Remove player
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-4">
+                <span class="font-display text-5xl font-extrabold tabular-nums leading-none" x-text="view.totals[p.id]"></span>
+                <span class="ml-1 text-sm opacity-50">pts</span>
+              </div>
+
+              <div class="flex items-center gap-1 p-3 pt-2" @click.stop>
+                <button type="button" class="btn btn-sm btn-ghost flex-1" aria-label="Minus one" @click="adjust(p, -1)">
+                  <i data-lucide="minus" class="size-4"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-ghost flex-1" aria-label="Plus one" @click="adjust(p, 1)">
+                  <i data-lucide="plus" class="size-4"></i>
+                </button>
+                <div class="dropdown dropdown-top dropdown-end flex-1">
+                  <div tabindex="0" role="button" class="btn btn-sm btn-ghost w-full font-semibold">±&nbsp;pts</div>
+                  <form tabindex="0" class="dropdown-content z-30 mb-1 w-60 space-y-2 rounded-box border border-base-content/10 bg-base-200 p-3 shadow-2xl"
+                        @submit.prevent="adjust(p, $refs.amount.value, $refs.note.value); $el.reset(); closeDropdowns()">
+                    <p class="text-xs uppercase tracking-wider opacity-50" x-text="`Adjust ${p.name}`"></p>
+                    <input type="number" x-ref="amount" required placeholder="e.g. 5 or -3" class="input input-sm input-bordered w-full">
+                    <input type="text" x-ref="note" maxlength="120" placeholder="Note (optional)" class="input input-sm input-bordered w-full">
+                    <button class="btn btn-primary btn-sm w-full">Apply</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div x-show="!game.players.length" class="glass-card grid place-items-center gap-3 rounded-2xl px-6 py-16 text-center">
+          <div class="grid size-16 place-items-center rounded-full bg-primary/15 text-primary">
+            <i data-lucide="users" class="size-8"></i>
+          </div>
+          <h2 class="font-display text-2xl font-bold">No players yet</h2>
+          <p class="max-w-md text-sm opacity-60">Type names into the box above. You can paste a whole list at once, like <code class="rounded bg-base-300 px-1">Alice, Bob, Cara</code>. Or <b>Open</b> a saved session to keep playing it.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== Round history (the game's, or the open session's) ===== -->
+    <section x-show="historyRounds.length" class="glass-card rounded-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-5 pt-4">
+        <h2 class="flex items-center gap-2 font-display text-lg font-bold">
+          <i data-lucide="history" class="size-5 opacity-70"></i> Round history
+          <span class="badge badge-sm" x-text="historyRounds.length"></span>
+        </h2>
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <span class="opacity-70">Points per round</span>
+          <input type="checkbox" class="toggle toggle-primary toggle-sm" :checked="historyShowPoints" @change="historyShowPoints = $el.checked">
+        </label>
+      </div>
+
+      <div class="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
+        <template x-for="(r, i) in [...historyRounds].reverse()" :key="`${session ? 's' : 'g'}-${r.number}-${i}`">
+          <div class="round-card" :class="i === 0 && 'is-latest'">
+            <div class="flex items-center gap-2">
+              <span class="round-num" x-text="r.number"></span>
+              <span class="min-w-0 flex-1 truncate font-semibold" x-text="r.label"></span>
+              <span x-show="i === 0" class="badge badge-primary badge-xs">latest</span>
+            </div>
+
+            <div x-show="session || game.tasksEnabled" class="mt-2">
+              <template x-if="r.task || r.gimmick">
+                <div>
+                  <span class="cat-badge" :style="`--cat: ${categoryColor(r.gimmick ? 'gimmick' : r.category)}`"
+                        x-text="r.gimmick ? '🎭 gimmick' : r.category"></span>
+                  <p x-show="r.task" class="round-task mt-2" x-text="r.task"></p>
+                  <p x-show="r.rule" class="mt-1 text-xs text-warning" x-text="`⚠ ${r.rule}`"></p>
+                </div>
+              </template>
+              <span x-show="!r.task && !r.gimmick" class="text-xs opacity-40">No task recorded</span>
+            </div>
+
+            <template x-if="r.results && r.results.length">
+              <div>
+                <p x-show="!historyShowPoints" class="mt-3 truncate border-t border-base-content/10 pt-2 text-sm opacity-80"
+                   x-text="`${placeMarker(r.results[0].place)} ${r.results[0].player} · +${r.results[0].points}`"></p>
+                <ol x-show="historyShowPoints" class="mt-3 space-y-1 border-t border-base-content/10 pt-2 text-sm">
+                  <template x-for="res in r.results" :key="res.player_id">
+                    <li class="flex items-center gap-2">
+                      <span class="w-7 shrink-0 text-center text-xs" x-text="placeMarker(res.place)"></span>
+                      <span class="size-2 shrink-0 rounded-full" :style="`background: ${res.color}`"></span>
+                      <span class="min-w-0 flex-1 truncate" x-text="res.player"></span>
+                      <span class="font-semibold tabular-nums" :class="res.points === 0 && 'opacity-40'"
+                            x-text="res.points > 0 ? `+${res.points}` : res.points"></span>
+                    </li>
+                  </template>
+                </ol>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- ===== Score sheet: editable for the game ===== -->
+    <section x-show="!session && game.players.length" class="glass-card rounded-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-5 pt-4">
+        <h2 class="flex items-center gap-2 font-display text-lg font-bold">
+          <i data-lucide="table-2" class="size-5 opacity-70"></i> Score sheet
+        </h2>
+        <span class="text-xs opacity-50">Click any number to edit it. Changes save when you leave the box.</span>
+      </div>
+      <div class="overflow-x-auto p-2 pb-3">
+        <table class="table table-sm">
+          <thead>
+            <tr class="align-bottom">
+              <th class="min-w-36">Player</th>
+              <template x-for="(r, ri) in view.doneRounds" :key="r.id">
+                <th class="min-w-32">
+                  <input :value="r.title || ''" :placeholder="`Round ${r.number}`" maxlength="80"
+                         class="input input-xs input-ghost w-full px-1 text-sm font-semibold normal-case"
+                         @change="setRoundTitle(r, $el.value)">
+                  <template x-if="game.tasksEnabled">
+                    <div class="px-1 py-0.5" :title="view.history[ri]?.task || ''">
+                      <span x-show="r.gimmick" class="cat-badge" style="--cat: #fbbf24">🎭 gimmick</span>
+                      <span x-show="!r.gimmick && view.history[ri]?.category" class="cat-badge"
+                            :style="`--cat: ${categoryColor(view.history[ri]?.category)}`"
+                            x-text="view.history[ri]?.category"></span>
+                    </div>
+                  </template>
+                  <div class="flex items-center gap-0.5 font-normal normal-case">
+                    <span class="px-1 text-[11px] opacity-60" x-text="`1st: ${r.maxPoints}`"></span>
+                    <button type="button" class="btn btn-ghost btn-xs btn-square" title="Recalculate points from finishing places" @click="recalcRound(r)">
+                      <i data-lucide="refresh-cw" class="size-3"></i>
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs btn-square text-error/70 hover:text-error" title="Delete round" @click="deleteRound(r)">
+                      <i data-lucide="trash-2" class="size-3"></i>
+                    </button>
+                  </div>
+                </th>
+              </template>
+              <th class="min-w-20">Bonus</th>
+              <th class="min-w-20 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="p in game.players" :key="p.id">
+              <tr class="hover">
+                <td>
+                  <div class="flex items-center gap-2 font-medium">
+                    <span class="size-2.5 shrink-0 rounded-full" :style="`background: ${p.color}`"></span>
+                    <span class="truncate" x-text="p.name"></span>
+                  </div>
+                </td>
+                <template x-for="r in view.doneRounds" :key="r.id">
+                  <td>
+                    <div class="flex items-center gap-1">
+                      <input type="number" :value="cell(p.id, r.id)?.points ?? 0"
+                             class="input input-xs input-ghost w-14 text-center tabular-nums"
+                             @change="setScore(r, p, $el.value)">
+                      <span x-show="cell(p.id, r.id)?.place" class="text-[11px] opacity-50" x-text="ordinal(cell(p.id, r.id)?.place || 0)"></span>
+                    </div>
+                  </td>
+                </template>
+                <td>
+                  <span :title="view.bonusNotes[p.id]?.length ? view.bonusNotes[p.id].join('\n') : 'Manual bonus / penalty points'">
+                    <input type="number" :value="view.bonus[p.id]"
+                           class="input input-xs input-ghost w-14 text-center tabular-nums"
+                           :class="view.bonus[p.id] > 0 ? 'text-success' : view.bonus[p.id] < 0 ? 'text-error' : ''"
+                           @change="setBonus(p, $el.value)">
+                  </span>
+                </td>
+                <td class="text-right font-display text-lg font-bold tabular-nums" x-text="view.totals[p.id]"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <p x-show="!view.doneRounds.length" class="px-3 pt-2 text-sm opacity-50">Rounds show up here as columns once you confirm them.</p>
+      </div>
+    </section>
+
+    <!-- ===== Score sheet: read-only for a saved session ===== -->
+    <template x-if="session">
+      <section class="glass-card rounded-2xl">
+        <h2 class="flex items-center gap-2 px-5 pt-4 font-display text-lg font-bold">
+          <i data-lucide="table-2" class="size-5 opacity-70"></i> Score sheet
+        </h2>
+        <div class="overflow-x-auto p-2 pb-3">
+          <table class="table table-sm">
+            <thead>
+              <tr class="align-bottom">
+                <th>Player</th>
+                <template x-for="r in session.rounds" :key="r.number">
+                  <th class="min-w-24 normal-case">
+                    <div class="text-sm font-semibold" x-text="r.label"></div>
+                    <span x-show="r.gimmick || r.category" class="cat-badge mt-1"
+                          :style="`--cat: ${categoryColor(r.gimmick ? 'gimmick' : r.category)}`"
+                          :title="r.task || ''" x-text="r.gimmick ? '🎭 gimmick' : r.category"></span>
+                  </th>
+                </template>
+                <th>Bonus</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="p in session.players" :key="p.id">
+                <tr class="hover">
+                  <td>
+                    <div class="flex items-center gap-2 font-medium">
+                      <span class="size-2.5 shrink-0 rounded-full" :style="`background: ${p.color}`"></span><span x-text="p.name"></span>
+                    </div>
+                  </td>
+                  <template x-for="(r, index) in session.rounds" :key="r.number">
+                    <td class="tabular-nums" x-text="sessionCell(p, index)"></td>
+                  </template>
+                  <td class="tabular-nums" x-text="p.bonus || 0"></td>
+                  <td class="text-right font-display text-lg font-bold tabular-nums" x-text="p.total"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </template>
+  </main>
+</div>
+
+<!-- ===== Scoreboard popup: the scoreboard page in a frame, so it updates live ===== -->
+<dialog id="scoreboard-modal" class="modal scoreboard-modal">
+  <div class="modal-box relative p-0">
+    <div class="absolute right-3 top-3 z-10 flex gap-1">
+      <button type="button" class="btn btn-ghost btn-sm btn-square" title="Full screen" onclick="toggleScoreboardFullscreen()">
+        <i data-lucide="maximize-2" class="size-4"></i>
+      </button>
+      <form method="dialog"><button class="btn btn-ghost btn-sm btn-square" title="Close (Esc)">
+        <i data-lucide="x" class="size-5"></i>
+      </button></form>
+    </div>
+    <iframe src="scoreboard.html" title="Scoreboard" class="scoreboard-frame"></iframe>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ===== Task picker ===== -->
+<dialog id="picker-modal" class="modal">
+  <div class="modal-box w-[min(96vw,40rem)] max-w-none border border-base-content/10">
+    <form method="dialog" class="absolute right-3 top-3">
+      <button class="btn btn-ghost btn-sm btn-square" title="Close (Esc)"><i data-lucide="x" class="size-5"></i></button>
+    </form>
+    <h3 class="mb-4 font-display text-xl font-bold"
+        x-text="{ main: 'Pick the task', backup: 'Pick the backup task', gimmick: 'Pick a gimmick' }[pickerSlot]"></h3>
+    <div x-show="pickerGroups.length > 1" class="mb-3 flex flex-wrap gap-1.5">
+      <template x-for="[category, items] in pickerGroups" :key="category">
+        <button type="button" class="cat-chip" :style="`--cat: ${categoryColor(category)}`"
+                :class="pickerCat === category && 'is-active'" @click="pickerCat = category">
+          <span x-text="category"></span> <span class="opacity-60" x-text="items.length"></span>
+        </button>
+      </template>
+    </div>
+    <div class="flex max-h-[55vh] flex-col gap-1.5 overflow-y-auto pr-1">
+      <template x-for="t in pickerItems" :key="`${pickerSlot}-${t.id}`">
+        <button type="button" class="task-option"
+                :class="pickerCurrent && pickerCurrent.id === t.id && 'is-current'" @click="setTask(pickerSlot, t.id)">
+          <span x-text="t.text"></span>
+          <span x-show="t.rule" class="mt-0.5 block text-xs text-warning" x-text="t.rule"></span>
+        </button>
+      </template>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ===== Task bank ===== -->
+<dialog id="tasks-modal" class="modal">
+  <div class="modal-box w-[min(96vw,48rem)] max-w-none border border-base-content/10">
+    <form method="dialog" class="absolute right-3 top-3">
+      <button class="btn btn-ghost btn-sm btn-square" title="Close (Esc)"><i data-lucide="x" class="size-5"></i></button>
+    </form>
+    <h3 class="mb-4 font-display text-xl font-bold">Task bank</h3>
+    <div class="flex flex-wrap items-center gap-3">
+      <div role="tablist" class="tabs-boxed tabs w-fit">
+        <button type="button" role="tab" class="tab gap-2" :class="taskKind === 'tasks' && 'tab-active'" @click="taskKind = 'tasks'">
+          Tasks <span class="badge badge-sm" x-text="banks.tasks.length"></span>
+        </button>
+        <button type="button" role="tab" class="tab gap-2" :class="taskKind === 'gimmicks' && 'tab-active'" @click="taskKind = 'gimmicks'">
+          🎭 Gimmicks <span class="badge badge-sm" x-text="banks.gimmicks.length"></span>
+        </button>
+      </div>
+      <label class="input input-sm input-bordered ml-auto flex w-full items-center gap-2 sm:w-56">
+        <i data-lucide="search" class="size-4 opacity-50"></i>
+        <input type="search" x-model="taskQuery" placeholder="Search…" class="grow">
+      </label>
+    </div>
+
+    <form @submit.prevent="addTask($el)" class="mt-4 flex flex-wrap gap-2 rounded-xl border border-base-content/10 bg-base-300/60 p-3">
+      <input x-show="taskKind === 'tasks'" name="category" list="task-categories" placeholder="category" autocomplete="off"
+             class="input input-sm input-bordered w-32">
+      <input name="text" required :placeholder="taskKind === 'tasks' ? 'New task…' : 'New gimmick…'"
+             class="input input-sm input-bordered min-w-[12rem] flex-1">
+      <input x-show="taskKind === 'gimmicks'" name="rule" placeholder="Rule (optional)" class="input input-sm input-bordered min-w-[12rem] flex-1">
+      <button class="btn btn-primary btn-sm"><i data-lucide="plus" class="size-4"></i> Add</button>
+    </form>
+    <datalist id="task-categories">
+      <template x-for="c in bankCategories" :key="c"><option :value="c"></option></template>
+    </datalist>
+
+    <div class="mt-4 max-h-[50vh] space-y-4 overflow-y-auto pr-1">
+      <template x-for="[category, items] in bankGroups" :key="`${taskKind}-${category}`">
+        <div x-show="items.some((t) => matchesQuery(t))">
+          <div x-show="!taskQuery" class="mb-2 flex items-center gap-2">
+            <span class="cat-badge" :style="`--cat: ${categoryColor(category)}`" x-text="category"></span>
+            <span class="text-xs opacity-50" x-text="items.length"></span>
+          </div>
+          <div class="space-y-1.5">
+            <template x-for="t in items" :key="t.id">
+              <div x-data="{ editing: false }" x-show="matchesQuery(t)" class="task-row">
+                <div x-show="!editing" class="flex items-start gap-2">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm" x-text="t.text"></p>
+                    <p x-show="t.rule" class="mt-0.5 text-xs text-warning" x-text="t.rule"></p>
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-xs btn-square" title="Edit" @click="editing = true">
+                    <i data-lucide="pencil" class="size-3.5"></i>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-xs btn-square text-error/70 hover:text-error" title="Delete" @click="deleteTask(t)">
+                    <i data-lucide="trash-2" class="size-3.5"></i>
+                  </button>
+                </div>
+                <template x-if="editing">
+                  <form class="flex flex-wrap items-center gap-2"
+                        @submit.prevent="if (editTask($el, t)) editing = false" @keydown.escape.stop="editing = false">
+                    <input x-show="taskKind === 'tasks'" name="category" :value="t.category" list="task-categories" autocomplete="off"
+                           class="input input-xs input-bordered w-28">
+                    <input name="text" :value="t.text" required class="input input-xs input-bordered min-w-[12rem] flex-1">
+                    <input x-show="taskKind === 'gimmicks'" name="rule" :value="t.rule" placeholder="Rule (optional)"
+                           class="input input-xs input-bordered min-w-[12rem] flex-1">
+                    <button class="btn btn-primary btn-xs">Save</button>
+                    <button type="button" class="btn btn-ghost btn-xs" @click="editing = false">Cancel</button>
+                  </form>
+                </template>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+      <p x-show="!banks[taskKind].length" class="py-8 text-center text-sm opacity-60">Nothing here yet. Add one above.</p>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between gap-2 border-t border-base-content/10 pt-3">
+      <p class="text-xs opacity-50">Edits are kept in this browser.</p>
+      <button type="button" class="btn btn-ghost btn-xs" @click="resetBanks()">
+        <i data-lucide="rotate-ccw" class="size-3.5"></i> Reset to defaults
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ===== Save ===== -->
+<dialog id="save-modal" class="modal">
+  <div class="modal-box border border-base-content/10">
+    <h3 class="font-display text-xl font-bold">Save session</h3>
+    <p class="py-2 text-sm opacity-70">
+      Saves who played, their totals, and every round's task and results to a file on your computer.
+      Use <b>Open</b> to look at it again or keep playing.
+    </p>
+    <form @submit.prevent="saveSession()" class="mt-2 space-y-3">
+      <input x-model="sessionName" required maxlength="80" autocomplete="off" class="input input-bordered w-full" placeholder="Session name">
+      <label class="flex cursor-pointer items-center gap-2 text-sm">
+        <input type="checkbox" x-model="clearAfter" class="checkbox checkbox-sm checkbox-primary">
+        Start fresh after saving (clear scores, keep players)
+      </label>
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close()">Cancel</button>
+        <button class="btn btn-primary"><i data-lucide="save" class="size-4"></i> Save file</button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<!-- ===== Reset ===== -->
+<dialog id="reset-modal" class="modal">
+  <div class="modal-box border border-base-content/10">
+    <h3 class="font-display text-xl font-bold">Reset the game?</h3>
+    <p class="py-3 text-sm opacity-70">You can't undo this. <b>Save the session</b> first if you want to keep the results.</p>
+    <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+      <form method="dialog"><button class="btn btn-ghost w-full">Cancel</button></form>
+      <button class="btn btn-warning" @click="reset('scores')">Clear scores, keep players</button>
+      <button class="btn btn-error" @click="reset('all')">New game</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<div id="toasts" class="toast toast-end toast-bottom z-50"></div>
+</body>
+</html>

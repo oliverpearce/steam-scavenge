@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scoreboard · steam scavenge</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="static/tailwind-config.js"></script>
+  <link href="static/app.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="static/tasks.js"></script>
+  <script src="static/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+</head>
+<!-- Live view of the game in this browser: updates whenever the host page changes it. -->
+<body class="min-h-screen font-sans text-base-content antialiased" x-data="scoreboard()">
+<div class="scoreboard-bg min-h-screen px-4 py-10 md:px-10">
+  <header class="mb-6 text-center">
+    <p class="text-sm font-semibold uppercase tracking-[0.35em] text-primary">Live standings</p>
+    <h1 class="mt-2 font-display text-5xl font-extrabold tracking-tight md:text-7xl">steam scavenge</h1>
+  </header>
+
+  <div class="mx-auto max-w-4xl">
+    <div class="mb-8 flex flex-wrap justify-center gap-2">
+      <template x-if="view.openRound">
+        <div class="contents">
+          <span class="badge badge-primary badge-lg gap-2 px-4 py-4 text-base"><span class="live-dot"></span> <span x-text="`Round ${view.openRound.number} in progress`"></span></span>
+          <template x-if="game.tasksEnabled && view.openRound.gimmick">
+            <div class="task-card gimmick w-full text-center">
+              <span class="cat-badge xl" style="--cat: #fbbf24">🎭 gimmick</span>
+              <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-4xl" x-text="view.gimmickTask ? view.gimmickTask.text : 'Gimmick round'"></p>
+              <p x-show="view.gimmickTask?.rule" class="task-rule mx-auto mt-3 w-fit text-base md:text-lg" x-text="`⚠ ${view.gimmickTask?.rule}`"></p>
+            </div>
+          </template>
+          <template x-if="game.tasksEnabled && !view.openRound.gimmick && view.openTask">
+            <div class="task-card w-full text-center" :style="`--cat: ${categoryColor(view.openTask.category)}`">
+              <span class="cat-badge xl" :style="`--cat: ${categoryColor(view.openTask.category)}`" x-text="view.openTask.category"></span>
+              <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-4xl" x-text="view.openTask.text"></p>
+              <p x-show="view.openTask.rule" class="task-rule mx-auto mt-3 w-fit text-base md:text-lg" x-text="`⚠ ${view.openTask.rule}`"></p>
+            </div>
+          </template>
+        </div>
+      </template>
+      <span x-show="!view.openRound && view.doneRounds.length" class="badge badge-lg border-base-content/20 bg-base-200/70 px-4 py-4 text-base"
+            x-text="`After ${plural(view.doneRounds.length, 'round')}`"></span>
+    </div>
+
+    <ol x-show="view.ranked.length" class="space-y-3 md:space-y-4">
+      <template x-for="(entry, i) in view.ranked" :key="entry.item.id">
+        <li class="lb-row animate__animated animate__fadeInUp" :class="entry.rank <= 3 && `rank-${entry.rank}`"
+            :style="`--player: ${entry.item.color}; animation-delay: ${i * 70}ms`">
+          <div class="rank-badge" x-text="entry.rank"></div>
+          <div class="avatar placeholder hidden shrink-0 sm:inline-flex">
+            <div class="w-14 rounded-full text-xl font-bold text-neutral-900 md:w-16" :style="`background: ${entry.item.color}`">
+              <span x-text="initials(entry.item.name)"></span>
+            </div>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="truncate font-display text-2xl font-bold md:text-4xl" x-text="entry.item.name"></div>
+            <div x-show="lastScore(entry.item)?.place" class="text-sm opacity-60 md:text-base"
+                 x-text="lastScore(entry.item) ? `${roundLabel(view.lastRound)}: ${ordinal(lastScore(entry.item).place || 0)} · +${lastScore(entry.item).points}` : ''"></div>
+          </div>
+          <div class="font-display text-4xl font-extrabold tabular-nums md:text-6xl" x-text="entry.total"></div>
+        </li>
+      </template>
+    </ol>
+    <p x-show="!view.ranked.length" class="py-24 text-center font-display text-3xl opacity-50">Waiting for contestants…</p>
+  </div>
+</div>
+</body>
+</html>

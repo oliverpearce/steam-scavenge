@@ -1,6 +1,0 @@
-<span id="bonus-{{ p.id }}" {% if oob %}hx-swap-oob="true"{% endif %}
-      title="{{ bonus_notes[p.id]|join('\n') if bonus_notes[p.id] else 'Manual bonus / penalty points' }}">
-  <input type="number" name="bonus" value="{{ bonus[p.id] }}"
-         class="input input-xs input-ghost w-14 text-center tabular-nums {{ 'text-success' if bonus[p.id] > 0 else 'text-error' if bonus[p.id] < 0 }}"
-         hx-patch="/players/{{ p.id }}/bonus" hx-trigger="change" hx-swap="none">
-</span>

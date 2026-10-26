@@ -1,0 +1,545 @@
+{
+  "version": 1,
+  "name": "Current game (exported)",
+  "saved_at": "2026-10-25T15:33:19",
+  "game_title": "steam scavenge",
+  "players": [
+    {
+      "id": 5,
+      "name": "jonnie",
+      "color": "#a78bfa",
+      "rank": 1,
+      "total": 28,
+      "bonus": 0
+    },
+    {
+      "id": 4,
+      "name": "andy",
+      "color": "#fbbf24",
+      "rank": 2,
+      "total": 26,
+      "bonus": 0
+    },
+    {
+      "id": 6,
+      "name": "charan",
+      "color": "#a78bfa",
+      "rank": 3,
+      "total": 25,
+      "bonus": 0
+    },
+    {
+      "id": 1,
+      "name": "aidan",
+      "color": "#f472b6",
+      "rank": 4,
+      "total": 22,
+      "bonus": 0
+    },
+    {
+      "id": 3,
+      "name": "andrew",
+      "color": "#34d399",
+      "rank": 5,
+      "total": 9,
+      "bonus": 0
+    }
+  ],
+  "rounds": [
+    {
+      "number": 1,
+      "label": "Round 1",
+      "gimmick": false,
+      "category": "speed",
+      "task": "Get a Game Over / death screen as fast as possible.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "label": "Round 2",
+      "gimmick": false,
+      "category": "action",
+      "task": "Go to sleep.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "label": "Round 3",
+      "gimmick": false,
+      "category": "find",
+      "task": "Find a character wearing a hat.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "label": "Round 4",
+      "gimmick": false,
+      "category": "death",
+      "task": "Freeze, or freeze to death.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "label": "Round 5",
+      "gimmick": false,
+      "category": "action",
+      "task": "Win $1,000 gambling.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "label": "Round 6",
+      "gimmick": false,
+      "category": "action",
+      "task": "Achieve an A rank (not S, B, C, or D).",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "label": "Round 7",
+      "gimmick": false,
+      "category": "find",
+      "task": "Find a character from another series.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "label": "Round 8",
+      "gimmick": false,
+      "category": "speed",
+      "task": "Earn any Steam achievement as fast as possible.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "label": "Round 9",
+      "gimmick": false,
+      "category": "action",
+      "task": "Win an online game against real people.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "label": "Round 10",
+      "gimmick": false,
+      "category": "action",
+      "task": "Take public transportation (where you are not operating the vehicle).",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "label": "Round 11",
+      "gimmick": false,
+      "category": "weird",
+      "task": "Find a game whose title starts with the same letter as your name.",
+      "rule": "",
+      "results": [
+        {
+          "player_id": 4,
+          "player": "andy",
+          "color": "#fbbf24",
+          "place": 1,
+          "points": 4
+        },
+        {
+          "player_id": 5,
+          "player": "jonnie",
+          "color": "#a78bfa",
+          "place": 2,
+          "points": 3
+        },
+        {
+          "player_id": 6,
+          "player": "charan",
+          "color": "#a78bfa",
+          "place": 3,
+          "points": 2
+        },
+        {
+          "player_id": 1,
+          "player": "aidan",
+          "color": "#f472b6",
+          "place": 4,
+          "points": 1
+        },
+        {
+          "player_id": 3,
+          "player": "andrew",
+          "color": "#34d399",
+          "place": 5,
+          "points": 0
+        }
+      ]
+    }
+  ]
+}
