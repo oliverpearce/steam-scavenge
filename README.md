@@ -1,6 +1,8 @@
-# steam scavenge
+# steam-scavenge
 
-A Flask points tracker for running a gameshow. It rolls random tasks for each round, scores players by finishing order, shows a live scoreboard, and saves each session.
+A Python Flask points tracker for running a game show. It rolls random tasks for each round, scores players by finishing order, shows a live scoreboard, and saves each session.
+
+[Rules!!!!](https://docs.google.com/presentation/d/1u3qphJGUw1EZpYNN_z6_ACk6JLpGf2zYq8NUKR6RNqc/edit?usp=sharing)
 
 ## Running it
 
