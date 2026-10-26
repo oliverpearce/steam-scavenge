@@ -1,27 +1,1997 @@
 <!doctype html>
-<html lang="en" data-theme="night">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>steam scavenge</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steam Scavenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@keyframes bounceIn {
+  from, 20%, 40%, 60%, 80%, to { animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); }
+  0% { opacity: 0; transform: scale3d(0.3, 0.3, 0.3); }
+  20% { transform: scale3d(1.1, 1.1, 1.1); }
+  40% { transform: scale3d(0.9, 0.9, 0.9); }
+  60% { opacity: 1; transform: scale3d(1.03, 1.03, 1.03); }
+  80% { transform: scale3d(0.97, 0.97, 0.97); }
+  to { opacity: 1; transform: scale3d(1, 1, 1); }
+}
+@keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 40px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+@keyframes fadeOutDown { from { opacity: 1; } to { opacity: 0; transform: translate3d(0, 40px, 0); } }
+.animate__animated { animation-duration: 1s; animation-fill-mode: both; }
+.animate__faster { animation-duration: 0.5s; }
+.animate__bounceIn { animation-name: bounceIn; animation-duration: 0.75s; }
+.animate__fadeInUp { animation-name: fadeInUp; }
+.animate__fadeOutDown { animation-name: fadeOutDown; }
+@media (prefers-reduced-motion: reduce) { .animate__animated { animation: none !important; } }
+/* Small component kit (buttons, inputs, modals, dropdowns, tabs, tables, toasts).
+   Lives in cascade layers so Tailwind utilities, which are unlayered, always win. */
+@layer base, components;
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="static/tailwind-config.js"></script>
-  <link href="static/app.css" rel="stylesheet">
+@layer base {
+  *, ::before, ::after { box-sizing: border-box; border: 0 solid oklch(var(--bc) / 0.15); }
+  html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
+  h1, h2, h3, h4, p, dl, dd, figure, blockquote { margin: 0; }
+  ol, ul, menu { list-style: none; margin: 0; padding: 0; }
+  button, input, select, textarea { font: inherit; color: inherit; letter-spacing: inherit; margin: 0; }
+  button, [role="button"] { cursor: pointer; background: transparent; padding: 0; }
+  a { color: inherit; text-decoration: inherit; }
+  table { border-collapse: collapse; text-indent: 0; }
+  th { text-align: inherit; font-weight: inherit; }
+  svg, img { display: block; vertical-align: middle; }
+  b, strong { font-weight: 700; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  textarea { resize: vertical; }
+  ::placeholder { color: oklch(var(--bc) / 0.4); opacity: 1; }
+  input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
+  :focus-visible { outline: 2px solid oklch(var(--p)); outline-offset: 2px; }
+}
 
-  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="static/tasks.js"></script>
-  <script src="static/app.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+@layer components {
+  .rounded-box { border-radius: 1rem; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; flex-shrink: 0;
+    height: 3rem; min-height: 3rem; padding: 0 1rem; font-size: 0.875rem; font-weight: 600; line-height: 1em;
+    border-radius: 0.5rem; border: 1px solid transparent; text-align: center; user-select: none; cursor: pointer;
+    background: oklch(var(--n)); color: oklch(var(--nc));
+    transition: background-color 0.15s, border-color 0.15s, transform 0.1s, opacity 0.15s, filter 0.15s;
+  }
+  .btn:hover { filter: brightness(1.12); }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled, .btn[disabled] { opacity: 0.4; pointer-events: none; }
+  .btn-sm { height: 2rem; min-height: 2rem; padding: 0 0.75rem; font-size: 0.8125rem; }
+  .btn-xs { height: 1.5rem; min-height: 1.5rem; padding: 0 0.5rem; font-size: 0.75rem; }
+  .btn-square { width: 3rem; padding: 0; }
+  .btn-square.btn-sm { width: 2rem; }
+  .btn-square.btn-xs { width: 1.5rem; }
+  .btn-primary { background: oklch(var(--p)); color: oklch(var(--pc)); }
+  .btn-secondary { background: oklch(var(--s)); color: oklch(var(--sc)); }
+  .btn-warning { background: oklch(var(--wa)); color: oklch(var(--wac)); }
+  .btn-error { background: oklch(var(--er)); color: oklch(var(--erc)); }
+  .btn-ghost { background: transparent; color: inherit; }
+  .btn-ghost:hover { background: oklch(var(--bc) / 0.1); filter: none; }
+  .btn-outline { background: transparent; color: oklch(var(--bc)); border-color: currentColor; }
+  .btn-outline.btn-secondary { color: oklch(var(--s)); }
+  .btn-outline.btn-warning { color: oklch(var(--wa)); }
+  .btn-outline:hover { background: color-mix(in srgb, currentColor 14%, transparent); filter: none; }
+
+  /* Badges */
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; width: fit-content;
+    height: 1.25rem; padding: 0 0.56rem; border-radius: 9999px; font-size: 0.875rem; line-height: 1.25rem;
+    border: 1px solid oklch(var(--bc) / 0.2); background: oklch(var(--b1)); color: oklch(var(--bc));
+  }
+  .badge-primary { background: oklch(var(--p)); color: oklch(var(--pc)); border-color: oklch(var(--p)); }
+  .badge-lg { height: 1.75rem; font-size: 1.05rem; padding: 0 0.88rem; }
+  .badge-sm { height: 1rem; font-size: 0.75rem; padding: 0 0.44rem; }
+  .badge-xs { height: 0.75rem; font-size: 0.625rem; padding: 0 0.31rem; }
+
+  /* Form controls */
+  .input, .textarea {
+    appearance: none; -webkit-appearance: none; min-width: 0;
+    background: oklch(var(--b1)); border: 1px solid transparent; border-radius: 0.5rem;
+    font-size: 1rem; transition: border-color 0.15s, background-color 0.15s;
+  }
+  .input { height: 3rem; padding: 0 1rem; line-height: 2; }
+  .textarea { min-height: 5rem; padding: 0.5rem 1rem; line-height: 1.5; }
+  .input-bordered, .textarea-bordered { border-color: oklch(var(--bc) / 0.2); }
+  .input:focus, .input:focus-within, .textarea:focus {
+    outline: 2px solid oklch(var(--p) / 0.55); outline-offset: 1px; border-color: oklch(var(--p) / 0.7);
+  }
+  .input-sm { height: 2rem; padding: 0 0.75rem; font-size: 0.875rem; line-height: 2rem; }
+  .input-xs { height: 1.5rem; padding: 0 0.5rem; font-size: 0.75rem; line-height: 1rem; }
+  .input-ghost, .textarea-ghost { background: transparent; border-color: transparent; }
+  .input-ghost:hover { background: oklch(var(--bc) / 0.06); }
+  .input-ghost:focus, .textarea-ghost:focus { background: oklch(var(--b1)); }
+  label.input { display: flex; align-items: center; gap: 0.5rem; }
+  label.input > input { flex: 1 1 auto; min-width: 0; height: 100%; background: transparent; border: 0; outline: 0; padding: 0; }
+  .grow { flex-grow: 1; }
+
+  .toggle {
+    appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0; cursor: pointer; vertical-align: middle;
+    width: 3rem; height: 1.5rem; border-radius: 9999px;
+    background: oklch(var(--bc) / 0.25); border: 1px solid oklch(var(--bc) / 0.4); transition: background-color 0.2s, border-color 0.2s;
+  }
+  .toggle::before {
+    content: ""; position: absolute; left: 3px; top: 50%; width: 1.05rem; height: 1.05rem; border-radius: 9999px;
+    background: oklch(var(--bc)); transform: translateY(-50%); transition: transform 0.2s;
+  }
+  .toggle:checked::before { transform: translate(1.45rem, -50%); }
+  .toggle-sm { width: 2.25rem; height: 1.25rem; }
+  .toggle-sm::before { width: 0.9rem; height: 0.9rem; left: 2px; }
+  .toggle-sm:checked::before { transform: translate(0.93rem, -50%); }
+  .toggle-primary:checked { background: oklch(var(--p)); border-color: oklch(var(--p)); }
+  .toggle-primary:checked::before { background: oklch(var(--pc)); }
+
+  .checkbox {
+    appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0; cursor: pointer;
+    width: 1.5rem; height: 1.5rem; border-radius: 0.3rem; border: 1px solid oklch(var(--bc) / 0.4); background: transparent;
+  }
+  .checkbox-sm { width: 1.25rem; height: 1.25rem; }
+  .checkbox:checked { background: oklch(var(--p)); border-color: oklch(var(--p)); }
+  .checkbox:checked::after {
+    content: ""; position: absolute; inset: 0; margin: auto; width: 28%; height: 52%;
+    border: solid oklch(var(--pc)); border-width: 0 2px 2px 0; transform: translateY(-8%) rotate(45deg);
+  }
+
+  /* Dropdowns open while they hold focus */
+  .dropdown { position: relative; display: inline-block; }
+  .dropdown > [tabindex]:focus { outline: none; }
+  .dropdown > .dropdown-content {
+    position: absolute; top: 100%; left: 0; visibility: hidden; opacity: 0; transform: scale(0.97);
+    transform-origin: top left; transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  }
+  .dropdown.dropdown-end > .dropdown-content { left: auto; right: 0; transform-origin: top right; }
+  .dropdown.dropdown-top > .dropdown-content { top: auto; bottom: 100%; transform-origin: bottom right; }
+  .dropdown:focus-within > .dropdown-content { visibility: visible; opacity: 1; transform: none; }
+
+  .menu { display: flex; flex-direction: column; font-size: 0.875rem; padding: 0.5rem; }
+  .menu li { display: flex; flex-direction: column; }
+  .menu li > a, .menu li > button {
+    display: flex; align-items: center; gap: 0.5rem; width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.5rem; text-align: left; cursor: pointer;
+  }
+  .menu li > a:hover, .menu li > button:hover { background: oklch(var(--bc) / 0.1); }
+
+  /* Modals use <dialog>; the .modal-backdrop button closes on outside click */
+  dialog.modal {
+    position: fixed; inset: 0; margin: 0; padding: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+    background: transparent; color: inherit; border: 0; overflow: hidden;
+  }
+  dialog.modal:not([open]) { display: none; }
+  dialog.modal[open] { display: grid; place-items: center; }
+  dialog.modal::backdrop { background: rgb(2 4 14 / 0.7); }
+  .modal-box {
+    grid-column-start: 1; grid-row-start: 1; width: 91.67%; max-width: 32rem; max-height: calc(100dvh - 3rem); overflow-y: auto;
+    padding: 1.5rem; border-radius: 1rem; background: oklch(var(--b1)); color: oklch(var(--bc));
+    box-shadow: 0 30px 70px -20px rgb(0 0 0 / 0.8); animation: modal-in 0.18s ease-out;
+  }
+  .modal-backdrop { grid-column-start: 1; grid-row-start: 1; z-index: -1; display: grid; align-self: stretch; justify-self: stretch; }
+  .modal-backdrop button { width: 100%; height: 100%; cursor: default; background: transparent; color: transparent; }
+  .modal-action { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
+  @keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+  .tabs { display: flex; flex-wrap: wrap; align-items: center; }
+  .tab {
+    display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.85rem;
+    font-size: 0.875rem; font-weight: 600; cursor: pointer; opacity: 0.65; white-space: nowrap; transition: opacity 0.15s, background-color 0.15s;
+  }
+  .tab:hover { opacity: 1; }
+  .tabs-boxed { padding: 0.25rem; border-radius: 0.6rem; background: oklch(var(--b3) / 0.8); border: 1px solid oklch(var(--bc) / 0.08); }
+  .tabs-boxed .tab { border-radius: 0.45rem; }
+  .tabs-boxed .tab-active { background: oklch(var(--p)); color: oklch(var(--pc)); opacity: 1; }
+
+  .table { width: 100%; text-align: left; font-size: 1rem; }
+  .table :where(th, td) { padding: 0.75rem 1rem; vertical-align: middle; }
+  .table-sm :where(th, td) { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+  .table :where(thead th) { font-weight: 600; opacity: 0.9; }
+  .table :where(tbody tr:not(:last-child), thead tr) { border-bottom: 1px solid oklch(var(--bc) / 0.1); }
+  .table tr.hover:hover { background: oklch(var(--bc) / 0.06); }
+
+  .avatar { position: relative; display: inline-flex; }
+  .avatar > div { display: block; aspect-ratio: 1 / 1; overflow: hidden; }
+  .avatar.placeholder > div { display: flex; align-items: center; justify-content: center; }
+
+  .toast {
+    position: fixed; display: flex; flex-direction: column; gap: 0.5rem; width: max-content; max-width: calc(100vw - 2rem);
+    padding: 1rem; padding-right: max(1rem, env(safe-area-inset-right, 0px)); padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .toast-end { right: 0; left: auto; }
+  .toast-bottom { bottom: 0; top: auto; }
+  .alert {
+    display: flex; align-items: center; gap: 0.5rem; padding: 1rem; border-radius: 0.6rem;
+    background: oklch(var(--b2)); color: oklch(var(--bc)); border: 1px solid oklch(var(--bc) / 0.12);
+  }
+  .alert-success { background: oklch(var(--su)); color: oklch(var(--suc)); border-color: transparent; }
+  .alert-info { background: oklch(var(--in)); color: oklch(var(--inc)); border-color: transparent; }
+  .alert-warning { background: oklch(var(--wa)); color: oklch(var(--wac)); border-color: transparent; }
+  .alert-error { background: oklch(var(--er)); color: oklch(var(--erc)); border-color: transparent; }
+
+  .divider { display: flex; align-items: center; gap: 1rem; height: 1rem; white-space: nowrap; }
+  .divider::before, .divider::after { content: ""; flex-grow: 1; height: 1px; background: oklch(var(--bc) / 0.1); }
+}
+
+[x-cloak] { display: none !important; }
+
+/* Midnight: deep navy surfaces with moonlit blue accents (overrides daisyUI "night"). */
+:root {
+  --b1: 19% 0.05 266;     /* inputs, popovers */
+  --b2: 15.5% 0.05 266;   /* cards, tiles */
+  --b3: 10% 0.045 266;    /* page */
+  --bc: 90% 0.03 260;     /* text: cool moonlight white */
+  --p: 70% 0.14 268;      /* primary: periwinkle */
+  --pc: 15% 0.05 268;
+  --s: 78% 0.1 230;       /* secondary: icy blue */
+  --sc: 15% 0.05 230;
+  --a: 88% 0.11 90;       /* accent: moon gold */
+  --ac: 20% 0.04 90;
+  --n: 27% 0.033 256;     /* neutral */
+  --nc: 84% 0.02 256;
+  --in: 72% 0.16 232;     /* info */
+  --inc: 20% 0.04 232;
+  --su: 77% 0.15 163;     /* success */
+  --suc: 15% 0.05 163;
+  --wa: 82% 0.17 84;      /* warning */
+  --wac: 20% 0.05 84;
+  --er: 70% 0.19 18;      /* error */
+  --erc: 15% 0.05 18;
+  color-scheme: dark;
+}
+
+body {
+  color: oklch(var(--bc));
+  background-color: #040714;
+  background-image:
+    /* the moon's glow, top right */
+    radial-gradient(circle at 88% 6%, rgb(224 231 255 / 0.18), rgb(165 180 252 / 0.08) 8%, transparent 26%),
+    radial-gradient(ellipse at 15% -10%, rgb(49 46 129 / 0.45), transparent 50%),
+    radial-gradient(ellipse at 50% 120%, rgb(12 20 60 / 0.95), transparent 60%),
+    linear-gradient(180deg, #0b1236 0%, #060a1f 45%, #02030a 100%);
+  background-attachment: fixed;
+}
+
+/* Two starfield layers twinkling out of step. */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  opacity: 0.7;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 68% 9%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 84% 42%, #c7d2fe, transparent),
+    radial-gradient(1px 1px at 32% 64%, #fff, transparent),
+    radial-gradient(1px 1px at 52% 31%, #e0e7ff, transparent),
+    radial-gradient(1.5px 1.5px at 6% 82%, #fff, transparent),
+    radial-gradient(1px 1px at 91% 76%, #fff, transparent),
+    radial-gradient(1px 1px at 44% 92%, #c7d2fe, transparent);
+  background-size: 420px 420px;
+  animation: twinkle 7s ease-in-out infinite;
+}
+
+body::after {
+  opacity: 0.45;
+  background-image:
+    radial-gradient(1px 1px at 22% 38%, #fff, transparent),
+    radial-gradient(1px 1px at 78% 22%, #dbeafe, transparent),
+    radial-gradient(1px 1px at 58% 71%, #fff, transparent),
+    radial-gradient(2px 2px at 37% 12%, #e0e7ff, transparent),
+    radial-gradient(1px 1px at 8% 53%, #fff, transparent),
+    radial-gradient(1px 1px at 95% 95%, #c7d2fe, transparent);
+  background-size: 290px 290px;
+  animation: twinkle 11s ease-in-out infinite reverse;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+}
+
+
+@layer components {
+.glass-card {
+  background: oklch(var(--b2) / 0.75);
+  border: 1px solid oklch(var(--bc) / 0.07);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px -15px rgb(0 0 0 / 0.6);
+}
+
+/* Player tiles ------------------------------------------------------------ */
+
+.player-tile {
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--player) 14%, transparent), transparent 55%),
+    oklch(var(--b2));
+  border: 1px solid oklch(var(--bc) / 0.07);
+  border-top: 4px solid var(--player);
+  box-shadow: 0 10px 30px -15px rgb(0 0 0 / 0.7);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+}
+
+.player-tile.is-pickable { cursor: pointer; }
+.player-tile.is-pickable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px -14px color-mix(in srgb, var(--player) 55%, transparent);
+}
+
+.player-tile.is-placed {
+  border-color: var(--player);
+  box-shadow: 0 0 0 2px var(--player), 0 18px 45px -12px color-mix(in srgb, var(--player) 70%, transparent);
+}
+
+.place-badge {
+  position: absolute;
+  top: -0.85rem;
+  right: -0.6rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 9999px;
+  background: oklch(var(--b1));
+  border: 2px solid var(--player);
+  box-shadow: 0 8px 20px -6px rgb(0 0 0 / 0.7);
+  color: oklch(var(--su));
+}
+
+/* Round panel ------------------------------------------------------------- */
+
+.round-live {
+  background:
+    radial-gradient(circle at 0% 0%, oklch(var(--p) / 0.25), transparent 55%),
+    oklch(var(--b2));
+}
+
+/* Tasks ------------------------------------------------------------------- */
+
+.task-card {
+  --cat: #94a3b8;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cat) 16%, transparent), transparent 60%),
+    oklch(var(--b1) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--cat) 35%, transparent);
+}
+
+.task-card.gimmick {
+  --cat: #fbbf24;
+  background:
+    repeating-linear-gradient(135deg, rgb(251 191 36 / 0.06) 0 14px, transparent 14px 28px),
+    oklch(var(--b1) / 0.7);
+}
+
+/* Stream hiding: html.hide-main / html.hide-backup swap a slot's task for a "Hidden" placeholder. */
+.masked-main,
+.masked-backup { display: none; }
+.hide-main .secret-main,
+.hide-backup .secret-backup { display: none !important; }
+.hide-main .masked-main,
+.hide-backup .masked-backup { display: inline-flex; }
+.hide-main p.masked-main,
+.hide-backup p.masked-backup { display: flex; }
+
+.task-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fde68a;
+  background: rgb(251 191 36 / 0.1);
+  border: 1px solid rgb(251 191 36 / 0.3);
+}
+
+.cat-badge,
+.cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cat);
+  background: color-mix(in srgb, var(--cat) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat) 45%, transparent);
+}
+
+.cat-badge { padding: 0.12rem 0.6rem; font-size: 0.7rem; }
+.cat-badge.lg { padding: 0.3rem 0.9rem; font-size: 0.85rem; }
+.cat-badge.xl { padding: 0.4rem 1.2rem; font-size: 1.1rem; }
+
+.cat-chip {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.72rem;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+.cat-chip:hover { opacity: 0.9; }
+.cat-chip.is-active { opacity: 1; background: color-mix(in srgb, var(--cat) 30%, transparent); }
+
+.task-option {
+  text-align: left;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.85rem;
+  font-size: 0.875rem;
+  background: oklch(var(--b1));
+  border: 1px solid oklch(var(--bc) / 0.08);
+  transition: border-color 0.15s, background 0.15s;
+}
+.task-option:hover { border-color: oklch(var(--p) / 0.6); background: oklch(var(--p) / 0.08); }
+.task-option.is-current { border-color: oklch(var(--p)); background: oklch(var(--p) / 0.15); }
+
+.task-row {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: oklch(var(--b1) / 0.6);
+  border: 1px solid oklch(var(--bc) / 0.06);
+}
+.task-row:hover { border-color: oklch(var(--bc) / 0.14); }
+
+/* Round history ------------------------------------------------------------ */
+
+.round-card {
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  background: oklch(var(--b1) / 0.6);
+  border: 1px solid oklch(var(--bc) / 0.07);
+}
+.round-task {
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.round-card.is-latest { border-color: oklch(var(--p) / 0.5); box-shadow: 0 0 30px -14px oklch(var(--p)); }
+
+.round-num {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.6rem;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-weight: 800;
+  background: oklch(var(--p) / 0.15);
+  color: oklch(var(--p));
+}
+
+/* Sessions ----------------------------------------------------------------- */
+
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  background: color-mix(in srgb, var(--player) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--player) 40%, transparent);
+}
+
+.session-row { transition: border-color 0.15s; }
+.session-row:hover { border-color: oklch(var(--p) / 0.4); }
+
+.lb-row.lb-row-compact { padding: 0.65rem 1rem; gap: 0.9rem; }
+.lb-row.lb-row-compact .rank-badge { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; }
+
+.pick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background: oklch(var(--b1) / 0.8);
+  border: 1px solid oklch(var(--bc) / 0.12);
+  font-size: 0.9rem;
+}
+
+.live-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.75); }
+}
+
+/* Scoreboard -------------------------------------------------------------- */
+
+.scoreboard-bg {
+  background:
+    radial-gradient(circle at 85% 0%, rgb(224 231 255 / 0.14), transparent 30%),
+    radial-gradient(ellipse at 50% -20%, rgb(67 56 202 / 0.35), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgb(30 58 138 / 0.25), transparent 50%);
+}
+
+/* Scoreboard popup on the host page */
+.scoreboard-modal .modal-box {
+  width: min(96vw, 72rem);
+  max-width: none;
+  max-height: 92vh;
+  overflow: hidden;
+  background-color: #050920;
+  border: 1px solid rgb(129 140 248 / 0.25);
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.9), 0 0 60px -20px rgb(99 102 241 / 0.5);
+}
+
+
+.scoreboard-modal::backdrop,
+.scoreboard-modal.modal { background-color: rgb(2 4 14 / 0.8); }
+
+.scoreboard-modal:fullscreen .modal-box {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+  border: 0;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--player) 18%, transparent), transparent 45%),
+    oklch(var(--b2) / 0.85);
+  border: 1px solid oklch(var(--bc) / 0.08);
+  border-left: 6px solid var(--player);
+}
+
+.rank-badge {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: oklch(var(--b3));
+  color: oklch(var(--bc) / 0.8);
+}
+
+.rank-1 { box-shadow: 0 0 0 2px #facc15, 0 0 50px -10px #facc15; }
+.rank-1 .rank-badge { background: linear-gradient(135deg, #fde047, #ca8a04); color: #1c1917; }
+.rank-2 { box-shadow: 0 0 0 2px #cbd5e1, 0 0 40px -12px #cbd5e1; }
+.rank-2 .rank-badge { background: linear-gradient(135deg, #f1f5f9, #94a3b8); color: #1c1917; }
+.rank-3 { box-shadow: 0 0 0 2px #f59e0b, 0 0 40px -12px #d97706; }
+.rank-3 .rank-badge { background: linear-gradient(135deg, #fbbf24, #b45309); color: #1c1917; }
+
+@media (min-width: 768px) {
+  .lb-row { padding: 1.25rem 1.75rem; gap: 1.5rem; }
+  .rank-badge { width: 3.75rem; height: 3.75rem; font-size: 1.75rem; }
+}
+
+}
+
+@layer components {
+  .page-gutter {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  /* Task bank rows: one editable row per task */
+  .task-edit-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.75rem;
+    background: oklch(var(--b1) / 0.6);
+    border: 1px solid oklch(var(--bc) / 0.06);
+    transition: border-color 0.15s;
+  }
+  .task-edit-row:hover { border-color: oklch(var(--bc) / 0.14); }
+  .task-edit-row:focus-within { border-color: oklch(var(--p) / 0.55); }
+  .task-edit-row .field {
+    width: 100%;
+    min-height: 0;
+    resize: none;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    overflow: hidden;
+  }
+  .task-edit-row .field-rule { color: oklch(var(--wa)); font-size: 0.8rem; }
+  .task-edit-row .field-cat {
+    height: 1.9rem;
+    padding: 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .task-edit-row .row-tools { display: flex; align-items: center; justify-content: flex-end; gap: 0.25rem; min-height: 1.9rem; }
+
+  @media (min-width: 768px) {
+    .task-edit-row {
+      grid-template-columns: 9rem minmax(0, 1.7fr) minmax(0, 1fr) 7.5rem;
+      align-items: start;
+    }
+    .task-edit-row.is-gimmick { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) 7.5rem; }
+  }
+
+  .task-add-row {
+    border-style: dashed;
+    border-color: oklch(var(--p) / 0.4);
+    background: oklch(var(--p) / 0.06);
+  }
+
+  .scoreboard-body { max-height: 88vh; overflow-y: auto; }
+  .scoreboard-modal:fullscreen .scoreboard-body { max-height: none; height: 100vh; }
+}
+
+@layer components {
+  .task-option.choice {
+    display: flex; flex-direction: column; align-items: flex-start; min-height: 5.5rem; padding: 0.8rem 1rem;
+    border-color: color-mix(in srgb, var(--cat, #94a3b8) 40%, transparent);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--cat, #94a3b8) 14%, transparent), transparent 65%),
+      oklch(var(--b1));
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .task-option.choice:hover {
+    transform: translateY(-2px);
+    border-color: var(--cat, #94a3b8);
+    box-shadow: 0 12px 30px -16px var(--cat, #94a3b8);
+  }
+  .task-option.choice.is-current { border-color: var(--cat, #94a3b8); box-shadow: 0 0 0 1px var(--cat, #94a3b8); }
+}
+
+html, body { margin: 0; }
+</style>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+tailwind.config = {
+  corePlugins: { preflight: false },
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Bricolage Grotesque"', "system-ui", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      colors: {
+        primary: "oklch(var(--p) / <alpha-value>)",
+        "primary-content": "oklch(var(--pc) / <alpha-value>)",
+        secondary: "oklch(var(--s) / <alpha-value>)",
+        accent: "oklch(var(--a) / <alpha-value>)",
+        "base-100": "oklch(var(--b1) / <alpha-value>)",
+        "base-200": "oklch(var(--b2) / <alpha-value>)",
+        "base-300": "oklch(var(--b3) / <alpha-value>)",
+        "base-content": "oklch(var(--bc) / <alpha-value>)",
+        info: "oklch(var(--in) / <alpha-value>)",
+        success: "oklch(var(--su) / <alpha-value>)",
+        warning: "oklch(var(--wa) / <alpha-value>)",
+        error: "oklch(var(--er) / <alpha-value>)",
+      },
+    },
+  },
+};
+</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+// Default task and gimmick banks. Task edits made in the app are kept in your browser;
+// "Reset to defaults" in the Tasks window brings these back. Each needs a unique id.
+
+const DEFAULT_TASKS = [
+  {"id": 1, "category": "speed", "text": "Get a Game Over / death screen as fast as possible.", "rule": ""},
+  {"id": 2, "category": "speed", "text": "Reach the main menu of a game the fastest (timer starts when you click Play in Steam).", "rule": ""},
+  {"id": 3, "category": "speed", "text": "Earn any Steam achievement as fast as possible.", "rule": ""},
+  {"id": 4, "category": "speed", "text": "Jump 10 times in a game as fast as possible.", "rule": ""},
+  {"id": 5, "category": "speed", "text": "Make a character say a line of spoken dialogue the fastest.", "rule": ""},
+  {"id": 6, "category": "speed", "text": "Open an in-game map the fastest.", "rule": ""},
+  {"id": 7, "category": "find", "text": "Show a horse (or something rideable).", "rule": ""},
+  {"id": 8, "category": "find", "text": "Show a working in-game clock or timer that isn't the HUD.", "rule": ""},
+  {"id": 9, "category": "find", "text": "Find a character wearing a hat.", "rule": ""},
+  {"id": 10, "category": "find", "text": "Show a body of water you can swim in.", "rule": ""},
+  {"id": 11, "category": "find", "text": "Find a chicken. Bonus points if you can pick it up.", "rule": ""},
+  {"id": 12, "category": "find", "text": "Show a door that can't be opened.", "rule": ""},
+  {"id": 13, "category": "find", "text": "Find the color pink on screen taking up at least a quarter of it.", "rule": ""},
+  {"id": 14, "category": "find", "text": "Show a piano or other playable instrument.", "rule": ""},
+  {"id": 15, "category": "most", "text": "Show the biggest number you can on screen within 2 minutes.", "rule": ""},
+  {"id": 16, "category": "most", "text": "Get as many enemies on screen at once as you can.", "rule": ""},
+  {"id": 17, "category": "most", "text": "Fall from the greatest height you can find without dying.", "rule": ""},
+  {"id": 18, "category": "most", "text": "Collect as much in-game currency as possible in 3 minutes.", "rule": ""},
+  {"id": 19, "category": "most", "text": "Show the most characters talking/standing together in one shot.", "rule": ""},
+  {"id": 20, "category": "judged", "text": "Show the most beautiful view you can find. Host judges.", "rule": ""},
+  {"id": 21, "category": "judged", "text": "Make the ugliest character possible in a character creator.", "rule": ""},
+  {"id": 22, "category": "judged", "text": "Recreate a famous painting or meme using a game.", "rule": ""},
+  {"id": 23, "category": "judged", "text": "Show the most cursed thing you can find in 3 minutes.", "rule": ""},
+  {"id": 24, "category": "judged", "text": "Build the best house you can in 5 minutes.", "rule": ""},
+  {"id": 25, "category": "judged", "text": "Make your character look as much like the host as possible.", "rule": ""},
+  {"id": 26, "category": "judged", "text": "Pull off the most stylish kill or move you can.", "rule": ""},
+  {"id": 27, "category": "weird", "text": "Show a game where the main character is not a human.", "rule": ""},
+  {"id": 28, "category": "weird", "text": "Launch the game with the oldest release date in your library.", "rule": ""},
+  {"id": 29, "category": "weird", "text": "Show a game you've played for less than 10 minutes and do something impressive in it.", "rule": ""},
+  {"id": 30, "category": "weird", "text": "Find a game whose title starts with the same letter as your name.", "rule": ""},
+  {"id": 31, "category": "weird", "text": "Make the in-game camera point straight up at the sky.", "rule": ""},
+  {"id": 32, "category": "weird", "text": "Get a character to sit down.", "rule": ""},
+  {"id": 33, "category": "weird", "text": "Show in-game food and eat it.", "rule": ""},
+  {"id": 34, "category": "weird", "text": "Find a mirror or reflective surface showing your character.", "rule": ""},
+  {"id": 35, "category": "closest", "text": "Get your health to exactly 1 HP (or as close as you can).", "rule": ""},
+  {"id": 36, "category": "closest", "text": "Show a number on screen as close to 69 as possible without going over.", "rule": ""},
+  {"id": 37, "category": "closest", "text": "Stop a timer in-game as close to exactly 30 seconds as possible.", "rule": ""},
+  {"id": 38, "category": "closest", "text": "Show an in-game date or year closest to today's date.", "rule": ""},
+  {"id": 39, "category": "survive", "text": "Survive as long as possible without pressing any buttons.", "rule": ""},
+  {"id": 40, "category": "survive", "text": "Beat the first boss of any game you've never played.", "rule": ""},
+  {"id": 41, "category": "action", "text": "Catch a fish.", "rule": ""},
+  {"id": 42, "category": "action", "text": "Jump out of a plane (or flying vehicle) and live.", "rule": ""},
+  {"id": 43, "category": "action", "text": "Take public transportation (where you are not operating the vehicle).", "rule": ""},
+  {"id": 44, "category": "action", "text": "Go to sleep.", "rule": ""},
+  {"id": 45, "category": "action", "text": "Win an online game against real people.", "rule": ""},
+  {"id": 47, "category": "action", "text": "Win $1,000 gambling.", "rule": ""},
+  {"id": 48, "category": "action", "text": "Take fall damage without dying.", "rule": ""},
+  {"id": 49, "category": "action", "text": "Achieve an A rank (not S, B, C, or D).", "rule": ""},
+  {"id": 50, "category": "action", "text": "Travel to another planet.", "rule": ""},
+  {"id": 51, "category": "action", "text": "Clip or glitch out of bounds.", "rule": ""},
+  {"id": 52, "category": "find", "text": "Find a character saying the name of the game naturally.", "rule": ""},
+  {"id": 54, "category": "find", "text": "Find a character from another series.", "rule": ""},
+  {"id": 55, "category": "action", "text": "Do a backflip.", "rule": ""},
+  {"id": 56, "category": "action", "text": "Time travel.", "rule": ""},
+  {"id": 57, "category": "action", "text": "Steal something.", "rule": ""},
+  {"id": 58, "category": "action", "text": "Craft something.", "rule": ""},
+  {"id": 59, "category": "action", "text": "Get second place in your game.", "rule": ""},
+  {"id": 60, "category": "death", "text": "Drown to death.", "rule": ""},
+  {"id": 63, "category": "action", "text": "Open a chest.", "rule": ""},
+  {"id": 64, "category": "death", "text": "Jump out of a plane (or flying vehicle) and die.", "rule": ""},
+  {"id": 65, "category": "death", "text": "Jump in lava.", "rule": ""},
+  {"id": 66, "category": "action", "text": "Parry an attack.", "rule": ""},
+  {"id": 67, "category": "death", "text": "Freeze, or freeze to death.", "rule": ""},
+  {"id": 68, "category": "action", "text": "Kill someone without a weapon.", "rule": ""},
+  {"id": 70, "category": "action", "text": "Play a video game within a video game.", "rule": ""},
+  {"id": 71, "category": "find", "text": "Show a skeleton.", "rule": ""},
+  {"id": 72, "category": "action", "text": "Level up.", "rule": ""},
+  {"id": 73, "category": "action", "text": "Break a weapon.", "rule": ""},
+  {"id": 74, "category": "action", "text": "Do a double backflip.", "rule": ""},
+];
+
+const DEFAULT_GIMMICKS = [
+  {"id": 1, "category": "gimmick", "text": "Pet an animal.", "rule": "Must be done in a free-to-play Steam game you don't already own."},
+  {"id": 2, "category": "gimmick", "text": "Make the funniest character in a character creator.", "rule": "10-minute time limit. Host judges."},
+  {"id": 3, "category": "gimmick", "text": "Work out.", "rule": "No running, swimming, or other cardio."},
+  {"id": 4, "category": "gimmick", "text": "Die to an explosion.", "rule": "Must be done in a free-to-play Steam game you don't already own (no demos)."},
+  {"id": 5, "category": "gimmick", "text": "Find the second highest number.", "rule": "Lock in a number within 5 minutes. Second highest wins; the highest comes last."},
+];
+
+// steam scavenge: a gameshow points tracker. No server: the current game lives in
+// this browser's localStorage, and saving a session writes a JSON file you can open later.
+
+const GAME_TITLE = "steam scavenge";
+const GAME_KEY = "steam-scavenge:game";
+const BANKS_KEY = "steam-scavenge:banks"; // only set once the task bank has been edited
+
+// Bright colours that stay readable on a dark background; new players cycle through them.
+const PALETTE = [
+  "#f472b6", "#60a5fa", "#34d399", "#fbbf24", "#a78bfa", "#f87171",
+  "#22d3ee", "#fb923c", "#a3e635", "#e879f9", "#2dd4bf", "#facc15",
+];
+
+// Badge colours per category; anything not listed gets the fallback.
+const CATEGORY_COLORS = {
+  speed: "#f87171",
+  find: "#34d399",
+  most: "#60a5fa",
+  judged: "#c084fc",
+  weird: "#f472b6",
+  closest: "#fbbf24",
+  survive: "#2dd4bf",
+  action: "#fb923c",
+  death: "#e11d48",
+  gimmick: "#fbbf24",
+};
+const FALLBACK_COLOR = "#94a3b8";
+
+/* Scoring ----------------------------------------------------------------- */
+
+// Last place earns 0 and each place above it earns one more.
+function pointsForPlace(place, last) {
+  if (!place || place < 1) return 0;
+  return Math.max(last - place, 0);
+}
+
+// Standard competition places ("1, 2, 2, 4") for a finishing order of { id, tie } picks.
+function placesFromOrder(order) {
+  let place = 0;
+  return order.map((pick, i) => {
+    if (!(pick.tie && i > 0)) place = i + 1;
+    return { id: pick.id, place };
+  });
+}
+
+// Places for everyone in a round: the clicked order, then anyone unclicked tied for last.
+function placesForRound(order, playerIds) {
+  const placed = placesFromOrder(order);
+  const seen = new Set(placed.map((p) => p.id));
+  const bottom = placed.length + 1;
+  return placed.concat(playerIds.filter((id) => !seen.has(id)).map((id) => ({ id, place: bottom })));
+}
+
+// The bottom place in a round. A missing place counts as tied for last.
+function lastPlace(places) {
+  const known = places.filter((p) => p != null);
+  if (known.length < places.length) return known.length + 1;
+  return Math.max(0, ...known);
+}
+
+// Sort [item, total] pairs high to low with shared ranks: 10, 8, 8, 5 -> 1, 2, 2, 4.
+function rankTotals(entries) {
+  const ordered = [...entries].sort((a, b) => b[1] - a[1]);
+  const ranked = [];
+  ordered.forEach(([item, total], i) => {
+    const prev = ranked[ranked.length - 1];
+    ranked.push({ rank: prev && prev.total === total ? prev.rank : i + 1, item, total });
+  });
+  return ranked;
+}
+
+/* Formatting -------------------------------------------------------------- */
+
+function ordinal(n) {
+  const suffix = n % 100 >= 10 && n % 100 <= 20 ? "th" : { 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th";
+  return `${n}${suffix}`;
+}
+
+function initials(name) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+}
+
+function signed(n) {
+  return n > 0 ? `+${n}` : `${n}`;
+}
+
+function medal(place) {
+  return { 1: "🥇", 2: "🥈", 3: "🥉" }[place] || `#${place}`;
+}
+
+function placeMarker(place) {
+  return { 1: "🥇", 2: "🥈", 3: "🥉" }[place] || (place ? ordinal(place) : "–");
+}
+
+function dateLabel(d) {
+  return `${d.toLocaleString("en-US", { month: "short" })} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+// "2026-10-17T19:42:05" -> "Oct 17, 2026 · 7:42 PM"
+function niceDateTime(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value || "";
+  return `${dateLabel(d)} · ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
+}
+
+// Local time as an ISO string without the timezone, e.g. "2026-10-17T19:42:05".
+function isoNow() {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+}
+
+function slugify(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60).replace(/-+$/, "") || "session";
+}
+
+function categoryColor(category) {
+  return CATEGORY_COLORS[category] || FALLBACK_COLOR;
+}
+
+function roundLabel(rnd) {
+  return rnd.title || `Round ${rnd.number}`;
+}
+
+function plural(n, word) {
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
+}
+
+/* Tasks ------------------------------------------------------------------- */
+
+// [[category, [tasks...]], ...] in the order categories first appear.
+function groupByCategory(tasks) {
+  const groups = new Map();
+  for (const task of tasks) {
+    if (!groups.has(task.category)) groups.set(task.category, []);
+    groups.get(task.category).push(task);
+  }
+  return [...groups];
+}
+
+// A random task, preferring ones not in `avoid` (already played) and never one in `never`.
+function pickTask(tasks, avoid, never) {
+  const pool = tasks.filter((t) => !never.has(t.id));
+  const fresh = pool.filter((t) => !avoid.has(t.id));
+  const choices = fresh.length ? fresh : pool;
+  return choices.length ? choices[Math.floor(Math.random() * choices.length)] : null;
+}
+
+// Up to n different tasks: unplayed ones first, then played ones, then the earlier options.
+function pickTasks(tasks, avoid, prev, never, n) {
+  const shuffle = (list) => {
+    const out = [...list];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  };
+  const pool = tasks.filter((t) => !never.has(t.id));
+  const tiers = [
+    pool.filter((t) => !avoid.has(t.id) && !prev.has(t.id)),
+    pool.filter((t) => avoid.has(t.id) && !prev.has(t.id)),
+    pool.filter((t) => prev.has(t.id)),
+  ];
+  return tiers.flatMap(shuffle).slice(0, n);
+}
+
+function nextTaskId(tasks) {
+  return Math.max(0, ...tasks.map((t) => t.id)) + 1;
+}
+
+/* Storage ----------------------------------------------------------------- */
+
+// Storage can be blocked (private windows, strict settings), so every access fails quietly.
+function readJson(key) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? null : JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function writeJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* ignore */
+  }
+}
+
+function removeKey(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
+
+function loadPref(key, fallback) {
+  const value = readJson(key);
+  return value === null ? fallback : value;
+}
+
+function savePref(key, value) {
+  writeJson(key, value);
+}
+
+// Rounds are "open" or "done". Scores with roundId null are manual bonus/penalty points.
+// A round's frozen task is the text it was played with, so later task edits don't rewrite history.
+function emptyGame() {
+  return { version: 2, nextId: 1, tasksEnabled: false, players: [], rounds: [], scores: [], picks: [] };
+}
+
+function loadGame() {
+  return { ...emptyGame(), ...(readJson(GAME_KEY) || {}) };
+}
+
+function loadBanks() {
+  const saved = readJson(BANKS_KEY);
+  return {
+    tasks: saved?.tasks || structuredClone(DEFAULT_TASKS),
+    gimmicks: saved?.gimmicks || structuredClone(DEFAULT_GIMMICKS),
+  };
+}
+
+/* Derived view ------------------------------------------------------------ */
+
+function taskOf(rnd, taskById, gimmickById) {
+  if (rnd.frozen) return rnd.frozen;
+  const task = rnd.gimmick ? gimmickById.get(rnd.gimmickTaskId) : taskById.get(rnd.taskId);
+  return task ? { category: task.category, text: task.text, rule: task.rule || "" } : null;
+}
+
+// Everything the pages show, worked out from the raw game and task banks.
+function buildView(game, banks) {
+  const taskById = new Map(banks.tasks.map((t) => [t.id, t]));
+  const gimmickById = new Map(banks.gimmicks.map((t) => [t.id, t]));
+  const players = game.players;
+  const doneRounds = game.rounds.filter((r) => r.status === "done").sort((a, b) => a.number - b.number);
+  const openRound = game.rounds.find((r) => r.status === "open") || null;
+
+  const totals = {};
+  const bonus = {};
+  const bonusNotes = {};
+  const cells = {}; // "playerId:roundId" -> score
+  for (const p of players) {
+    totals[p.id] = 0;
+    bonus[p.id] = 0;
+    bonusNotes[p.id] = [];
+  }
+  for (const s of game.scores) {
+    if (!(s.playerId in totals)) continue;
+    totals[s.playerId] += s.points;
+    if (s.roundId == null) {
+      bonus[s.playerId] += s.points;
+      bonusNotes[s.playerId].push(`${signed(s.points)} ${s.note || ""}`.trim());
+    } else {
+      cells[`${s.playerId}:${s.roundId}`] = s;
+    }
+  }
+
+  const ranked = rankTotals(players.map((p) => [p, totals[p.id]]));
+  const rankOf = Object.fromEntries(ranked.map((r) => [r.item.id, r.rank]));
+  const byId = Object.fromEntries(players.map((p) => [p.id, p]));
+
+  // Finished rounds as plain data: the shape saved in session files too.
+  const history = doneRounds.map((rnd) => {
+    const task = taskOf(rnd, taskById, gimmickById);
+    const results = Object.values(cells)
+      .filter((s) => s.roundId === rnd.id)
+      .map((s) => ({
+        player_id: s.playerId, player: byId[s.playerId].name, color: byId[s.playerId].color,
+        place: s.place, points: s.points,
+      }))
+      .sort((a, b) => b.points - a.points || (a.place || 999) - (b.place || 999) || a.player.localeCompare(b.player));
+    return {
+      number: rnd.number,
+      label: roundLabel(rnd),
+      gimmick: !!rnd.gimmick,
+      category: rnd.gimmick ? "gimmick" : task?.category ?? null,
+      task: task?.text ?? null,
+      rule: task?.rule ?? "",
+      results,
+    };
+  });
+
+  const lastRound = doneRounds[doneRounds.length - 1] || null;
+  return {
+    taskById, gimmickById, players, doneRounds, openRound, totals, bonus, bonusNotes, cells,
+    ranked, rankOf, history, lastRound,
+    openTask: openRound ? taskById.get(openRound.taskId) || null : null,
+    backupTask: openRound ? taskById.get(openRound.backupTaskId) || null : null,
+    gimmickTask: openRound ? gimmickById.get(openRound.gimmickTaskId) || null : null,
+    openOptions: openRound ? (openRound.options || []).map((id) => taskById.get(id)).filter(Boolean) : [],
+    gimmickOptionList: openRound ? (openRound.gimmickOptions || []).map((id) => gimmickById.get(id)).filter(Boolean) : [],
+  };
+}
+
+function sessionSnapshot(view, name) {
+  return {
+    version: 2,
+    name,
+    saved_at: isoNow(),
+    game_title: GAME_TITLE,
+    players: view.ranked.map(({ rank, item: p, total }) => ({
+      id: p.id, name: p.name, color: p.color, rank, total, bonus: view.bonus[p.id],
+    })),
+    rounds: view.history,
+  };
+}
+
+// Rebuild a playable game from a saved session file, so you can keep going where you left off.
+function gameFromSnapshot(snapshot) {
+  const game = emptyGame();
+  const nid = () => game.nextId++;
+  const idMap = new Map();
+  for (const p of snapshot.players) {
+    const id = nid();
+    idMap.set(p.id, id);
+    game.players.push({ id, name: p.name, color: p.color || PALETTE[game.players.length % PALETTE.length] });
+  }
+  (snapshot.rounds || []).forEach((r, index) => {
+    const number = index + 1;
+    const results = (r.results || []).filter((res) => idMap.has(res.player_id));
+    const rnd = {
+      id: nid(), number, title: r.label && r.label !== `Round ${r.number}` ? r.label : null,
+      status: "done", maxPoints: Math.max(0, ...results.map((res) => res.points)),
+      taskId: null, backupTaskId: null, gimmick: !!r.gimmick, gimmickTaskId: null,
+      frozen: r.task ? { category: r.gimmick ? "gimmick" : r.category, text: r.task, rule: r.rule || "" } : null,
+    };
+    game.rounds.push(rnd);
+    for (const res of results) {
+      game.scores.push({ id: nid(), playerId: idMap.get(res.player_id), roundId: rnd.id, place: res.place, points: res.points, note: null });
+    }
+  });
+  for (const p of snapshot.players) {
+    if (p.bonus) game.scores.push({ id: nid(), playerId: idMap.get(p.id), roundId: null, place: null, points: p.bonus, note: "Carried over" });
+  }
+  game.tasksEnabled = (snapshot.rounds || []).some((r) => r.task || r.gimmick);
+  return game;
+}
+
+/* Files ------------------------------------------------------------------- */
+
+// Chrome and Edge get a real save dialog (starting on the Desktop); other browsers download the file.
+async function getDownloads() {
+  try {
+    return window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+  } catch {
+    return null;
+  }
+}
+
+async function saveTextFile(filename, text, mime, extension) {
+  const dl = await getDownloads();
+  if (dl) {
+    try {
+      await dl.save({ filename, data: text });
+      return true;
+    } catch (error) {
+      if (error && error.code === "declined") return false;
+      showToast("Couldn't save that file", "error");
+      return false;
+    }
+  }
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        startIn: "desktop",
+        types: [{ description: filename, accept: { [mime]: [extension] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(text);
+      await writable.close();
+      return true;
+    } catch (error) {
+      if (error.name === "AbortError") return false;
+      // Anything else (e.g. blocked in this context): fall back to a plain download.
+    }
+  }
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return true;
+}
+
+// Parse CSV text into rows of cells. Handles quoted cells, doubled quotes and CRLF.
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+  text = text.replace(/^\uFEFF/, "");
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (ch === '"') quoted = false;
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); cell = "";
+      rows.push(row); row = [];
+    } else cell += ch;
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((c) => c.trim() !== ""));
+}
+
+// Build a game from a scores CSV: a Player column, one column per round, and optional
+// Rank / Bonus / Total columns (the layout Export CSV writes). Places come from the points.
+function scoresFromCsv(text, existing = []) {
+  const rows = parseCsv(text);
+  if (rows.length < 2) throw new Error("That CSV has no scores in it");
+  const head = rows[0].map((h) => h.trim());
+  const low = head.map((h) => h.toLowerCase());
+  const nameCol = low.includes("player") ? low.indexOf("player") : low.indexOf("name");
+  if (nameCol < 0) throw new Error("The CSV needs a Player column");
+  const rankCol = low.indexOf("rank");
+  const bonusCol = low.indexOf("bonus");
+  const totalCol = low.indexOf("total");
+  const roundCols = head.map((h, i) => i).filter((i) => head[i] && ![nameCol, rankCol, bonusCol, totalCol].includes(i));
+  if (!roundCols.length && bonusCol < 0 && totalCol < 0) throw new Error("No score columns found. Add a column per round, or a Total column");
+  const dataRows = rows.slice(1).filter((r) => (r[nameCol] || "").trim());
+  if (!dataRows.length) throw new Error("That CSV has no players in it");
+
+  const game = emptyGame();
+  const nid = () => game.nextId++;
+  const known = new Map(existing.map((p) => [p.name.trim().toLowerCase(), p]));
+  const whole = (value) => {
+    const n = parseInt(String(value ?? "").replace(/^\+/, "").trim(), 10);
+    return Number.isNaN(n) ? 0 : n;
+  };
+
+  dataRows.forEach((r, i) => {
+    const name = r[nameCol].trim().slice(0, 80);
+    game.players.push({ id: nid(), name, color: known.get(name.toLowerCase())?.color || PALETTE[i % PALETTE.length] });
+  });
+
+  roundCols.forEach((col, index) => {
+    const points = dataRows.map((r) => whole(r[col]));
+    const rnd = {
+      id: nid(), number: index + 1, title: /^round\s*\d+$/i.test(head[col]) ? null : head[col].slice(0, 80),
+      status: "done", maxPoints: Math.max(0, ...points), taskId: null, backupTaskId: null,
+      gimmick: false, gimmickTaskId: null, frozen: null, options: [], gimmickOptions: [],
+    };
+    game.rounds.push(rnd);
+    game.players.forEach((p, i) => {
+      const place = 1 + points.filter((other) => other > points[i]).length;
+      game.scores.push({ id: nid(), playerId: p.id, roundId: rnd.id, place, points: points[i], note: null });
+    });
+  });
+
+  dataRows.forEach((r, i) => {
+    const earned = roundCols.reduce((sum, col) => sum + whole(r[col]), 0);
+    const bonus = bonusCol >= 0 ? whole(r[bonusCol]) : totalCol >= 0 ? whole(r[totalCol]) - earned : 0;
+    if (bonus) game.scores.push({ id: nid(), playerId: game.players[i].id, roundId: null, place: null, points: bonus, note: "Imported" });
+  });
+  return game;
+}
+
+// Grow a textarea to fit its text (does nothing while it is not visible).
+function autosize(el) {
+  if (!el || !el.scrollHeight) return;
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight}px`;
+}
+
+function csvCell(value) {
+  const text = String(value);
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+/* Host page --------------------------------------------------------------- */
+
+function host() {
+  return {
+    game: loadGame(),
+    banks: loadBanks(),
+    tieNext: false,
+    session: null, // a saved session file being viewed
+    sessionName: "",
+    clearAfter: false,
+    showRoundPoints: loadPref("showRoundPoints", false),
+    showSessionRoundPoints: loadPref("showSessionRoundPoints", true),
+    taskKind: "tasks",
+    taskQuery: "",
+    pickerSlot: "main",
+    pickerCat: "",
+    tab: "game", // "game" or "tasks"
+    choosing: { main: false, gimmick: false }, // true while repicking from the three options
+    filterCat: "",
+    confirmMsg: "",
+    _confirm: null,
+
+    init() {
+      Alpine.effect(() => writeJson(GAME_KEY, this.game));
+      this.$watch("showRoundPoints", (v) => savePref("showRoundPoints", v));
+      this.$watch("showSessionRoundPoints", (v) => savePref("showSessionRoundPoints", v));
+      // Another tab (e.g. a second host window) changed the game.
+      window.addEventListener("storage", (e) => {
+        if (e.key === GAME_KEY) this.game = loadGame();
+        if (e.key === BANKS_KEY) this.banks = loadBanks();
+      });
+    },
+
+    get view() {
+      return buildView(this.game, this.banks);
+    },
+
+    nid() {
+      return this.game.nextId++;
+    },
+
+    cell(playerId, roundId) {
+      return this.view.cells[`${playerId}:${roundId}`] || null;
+    },
+
+    // --- Players ------------------------------------------------------------
+
+    addPlayers(input) {
+      const names = input.value.split(/[,\n]/).map((n) => n.trim().slice(0, 80)).filter(Boolean);
+      if (!names.length) return showToast("Type a name first", "warning");
+      const existing = this.game.players.length;
+      names.forEach((name, i) => {
+        this.game.players.push({ id: this.nid(), name, color: PALETTE[(existing + i) % PALETTE.length] });
+      });
+      input.value = "";
+      input.focus();
+      showToast(names.length === 1 ? `Added ${names[0]}` : `Added ${names.length} players`);
+    },
+
+    renamePlayer(player, name) {
+      name = name.trim().slice(0, 80);
+      if (name) player.name = name;
+    },
+
+    async removePlayer(player) {
+      if (!(await this.askConfirm(`Remove ${player.name} and all their points?`))) return;
+      this.game.players = this.game.players.filter((p) => p.id !== player.id);
+      this.game.scores = this.game.scores.filter((s) => s.playerId !== player.id);
+      this.game.picks = this.game.picks.filter((pick) => pick.id !== player.id);
+      showToast(`Removed ${player.name}`, "info");
+    },
+
+    adjust(player, amount, note = "") {
+      amount = parseInt(amount, 10);
+      note = note.trim().slice(0, 120);
+      if (!amount) return showToast("Enter a non-zero amount", "warning");
+      this.game.scores.push({ id: this.nid(), playerId: player.id, roundId: null, place: null, points: amount, note: note || null });
+      // Quick +1/-1 taps stay silent; custom adjustments get a confirmation.
+      if (Math.abs(amount) !== 1 || note) showToast(`${signed(amount)} for ${player.name}`);
+    },
+
+    setBonus(player, value) {
+      const target = parseInt(value, 10);
+      if (Number.isNaN(target)) return showToast("Bonus must be a whole number", "warning");
+      const current = this.view.bonus[player.id];
+      if (target !== current) {
+        this.game.scores.push({ id: this.nid(), playerId: player.id, roundId: null, place: null, points: target - current, note: "Manual edit" });
+      }
+    },
+
+    // --- Rounds -------------------------------------------------------------
+
+    nextRoundNumber() {
+      return Math.max(0, ...this.game.rounds.map((r) => r.number)) + 1;
+    },
+
+    startRound() {
+      if (this.view.openRound) return showToast("Finish the current round first", "warning");
+      if (!this.game.players.length) return showToast("Add some players first", "warning");
+      const rnd = {
+        id: this.nid(), number: this.nextRoundNumber(), title: null, status: "open",
+        maxPoints: this.game.players.length - 1,
+        taskId: null, backupTaskId: null, gimmick: false, gimmickTaskId: null, frozen: null,
+        options: [], gimmickOptions: [],
+      };
+      this.choosing = { main: false, gimmick: false };
+      if (this.game.tasksEnabled) {
+        this.rollTask(rnd, "backup");
+        this.rollOptions(rnd, "main");
+      }
+      this.game.rounds.push(rnd);
+      this.game.picks = [];
+      this.tieNext = false;
+    },
+
+    // Ids already played in finished rounds, so new rolls avoid repeats.
+    playedIds(field, gimmick) {
+      return new Set(
+        this.game.rounds.filter((r) => r.status === "done" && !!r.gimmick === gimmick && r[field] != null).map((r) => r[field]),
+      );
+    },
+
+    // Give the round a fresh random task in `slot` ("main", "backup" or "gimmick").
+    rollTask(rnd, slot) {
+      let task;
+      if (slot === "gimmick") {
+        task = pickTask(this.banks.gimmicks, this.playedIds("gimmickTaskId", true), new Set([rnd.gimmickTaskId]));
+        if (task) rnd.gimmickTaskId = task.id;
+      } else {
+        task = pickTask(this.banks.tasks, this.playedIds("taskId", false), new Set([rnd.taskId, rnd.backupTaskId]));
+        if (task) rnd[slot === "main" ? "taskId" : "backupTaskId"] = task.id;
+      }
+      return task;
+    },
+
+    // Backup: one new random task. Main / gimmick: three new options to choose from.
+    reroll(slot) {
+      const rnd = this.view.openRound;
+      if (!rnd) return;
+      if (slot === "backup") {
+        if (!this.rollTask(rnd, "backup")) return showToast("Nothing else to roll. Add more tasks in the Task bank", "warning");
+        return;
+      }
+      const label = slot === "gimmick" ? "gimmicks" : "tasks";
+      if (!this.rollOptions(rnd, slot)) return showToast(`No ${label} to roll. Add some in the Task bank`, "warning");
+      this.choosing[slot === "gimmick" ? "gimmick" : "main"] = true;
+      rnd.gimmick = slot === "gimmick";
+    },
+
+    // Put a specific task in a slot. Picking the other slot's task swaps them.
+    setTask(slot, taskId) {
+      const rnd = this.view.openRound;
+      if (!rnd) return;
+      if (slot === "gimmick") {
+        rnd.gimmickTaskId = taskId;
+      } else {
+        const field = slot === "main" ? "taskId" : "backupTaskId";
+        const other = slot === "main" ? "backupTaskId" : "taskId";
+        if (rnd[other] === taskId) [rnd.taskId, rnd.backupTaskId] = [rnd.backupTaskId, rnd.taskId];
+        else rnd[field] = taskId;
+      }
+      if (slot !== "backup") rnd.gimmick = slot === "gimmick";
+      if (slot !== "backup") this.choosing[slot === "gimmick" ? "gimmick" : "main"] = false;
+      document.getElementById("picker-modal").close();
+    },
+
+    swapTasks() {
+      const rnd = this.view.openRound;
+      [rnd.taskId, rnd.backupTaskId] = [rnd.backupTaskId, rnd.taskId];
+      rnd.gimmick = false;
+      showToast("Backup task is now the main task", "info");
+    },
+
+    toggleGimmick() {
+      const rnd = this.view.openRound;
+      rnd.gimmick = !rnd.gimmick;
+      this.choosing.gimmick = false;
+      if (rnd.gimmick && rnd.gimmickTaskId == null && !this.view.gimmickOptionList.length) this.rollOptions(rnd, "gimmick"); // keep earlier options
+      showToast(rnd.gimmick ? "Gimmick round!" : "Back to the rolled task", "info");
+    },
+
+    // --- Placement ----------------------------------------------------------
+
+    placed() {
+      return placesFromOrder(this.game.picks);
+    },
+
+    placeOf(id) {
+      const hit = this.placed().find((p) => p.id === id);
+      return hit ? hit.place : null;
+    },
+
+    // Bottom place right now: anyone unclicked ties for last.
+    currentLastPlace() {
+      const placed = this.placed();
+      if (placed.length < this.game.players.length) return placed.length + 1;
+      return Math.max(0, ...placed.map((p) => p.place));
+    },
+
+    pointsFor(place) {
+      return pointsForPlace(place, this.currentLastPlace());
+    },
+
+    nameOf(id) {
+      return this.game.players.find((p) => p.id === id)?.name || "?";
+    },
+
+    togglePick(id) {
+      const picks = this.game.picks;
+      const index = picks.findIndex((p) => p.id === id);
+      if (index === -1) {
+        picks.push({ id, tie: this.tieNext && picks.length > 0 });
+        this.tieNext = false;
+        return;
+      }
+      const [removed] = picks.splice(index, 1);
+      // If the next pick was tied to the one removed, it inherits that pick's tie status.
+      const next = picks[index];
+      if (next && next.tie) next.tie = removed.tie;
+    },
+
+    undoPick() {
+      const picks = this.game.picks;
+      if (picks.length) this.togglePick(picks[picks.length - 1].id);
+    },
+
+    confirmRound() {
+      const rnd = this.view.openRound;
+      if (!rnd) return;
+      if (!this.game.picks.length) return showToast("Click players in finishing order first", "warning");
+      if (this.game.tasksEnabled && this.showOptions(rnd.gimmick ? "gimmick" : "main") && (rnd.gimmick ? rnd.gimmickTaskId : rnd.taskId) == null) {
+        return showToast(rnd.gimmick ? "Pick a gimmick first" : "Pick a task first", "warning");
+      }
+      const playerIds = this.game.players.map((p) => p.id);
+      const places = placesForRound(this.game.picks, playerIds);
+      const bottom = lastPlace(places.map((p) => p.place));
+      for (const { id, place } of places) {
+        this.game.scores.push({ id: this.nid(), playerId: id, roundId: rnd.id, place, points: pointsForPlace(place, bottom), note: null });
+      }
+      rnd.maxPoints = pointsForPlace(1, bottom); // what 1st place earned, for reference
+      rnd.frozen = this.game.tasksEnabled ? taskOf(rnd, this.view.taskById, this.view.gimmickById) : null;
+      rnd.status = "done";
+      this.game.picks = [];
+      this.tieNext = false;
+      showToast(`${roundLabel(rnd)} saved!`);
+      celebrate();
+    },
+
+    setRoundTitle(rnd, title) {
+      rnd.title = title.trim().slice(0, 80) || null;
+    },
+
+    async recalcRound(rnd) {
+      if (!(await this.askConfirm(`Recalculate ${roundLabel(rnd)} from finishing places (last place = 0)? Manual edits in this round will be overwritten.`))) return;
+      const scores = this.game.scores.filter((s) => s.roundId === rnd.id);
+      const bottom = lastPlace(scores.map((s) => s.place));
+      for (const s of scores) s.points = pointsForPlace(s.place || bottom, bottom);
+      rnd.maxPoints = pointsForPlace(1, bottom);
+      showToast(`${roundLabel(rnd)} recalculated`);
+    },
+
+    async deleteRound(rnd) {
+      const open = rnd.status === "open";
+      if (!(await this.askConfirm(open ? "Cancel this round? Nothing will be saved." : `Delete ${roundLabel(rnd)} and all of its points?`))) return;
+      const label = roundLabel(rnd);
+      this.game.rounds = this.game.rounds.filter((r) => r.id !== rnd.id);
+      this.game.scores = this.game.scores.filter((s) => s.roundId !== rnd.id);
+      [...this.game.rounds].sort((a, b) => a.number - b.number).forEach((r, i) => (r.number = i + 1));
+      if (open) this.game.picks = [];
+      showToast(open ? "Round cancelled" : `Deleted ${label}`, "info");
+    },
+
+    setScore(rnd, player, value) {
+      const points = parseInt(value, 10);
+      if (Number.isNaN(points)) return showToast("Points must be a whole number", "warning");
+      const score = this.cell(player.id, rnd.id);
+      if (score) score.points = points;
+      else this.game.scores.push({ id: this.nid(), playerId: player.id, roundId: rnd.id, place: null, points, note: null });
+    },
+
+    // --- Game ---------------------------------------------------------------
+
+    setTasksEnabled(enabled) {
+      this.game.tasksEnabled = enabled;
+      const rnd = this.view.openRound;
+      if (enabled && rnd && rnd.taskId == null && !this.view.openOptions.length) { // round started with tasks off
+        this.rollTask(rnd, "backup");
+        this.rollOptions(rnd, "main");
+      }
+      showToast(enabled ? "Tasks on" : "Tasks off: just rounds and points", "info");
+    },
+
+    exportCsv() {
+      const view = this.view;
+      const rows = [["Rank", "Player", ...view.doneRounds.map(roundLabel), "Bonus", "Total"]];
+      for (const { rank, item: p, total } of view.ranked) {
+        rows.push([rank, p.name, ...view.doneRounds.map((r) => this.cell(p.id, r.id)?.points ?? 0), view.bonus[p.id], total]);
+      }
+      const text = rows.map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
+      saveTextFile("gameshow-scores.csv", text, "text/csv", ".csv");
+    },
+
+    reset(mode) {
+      this.game.scores = [];
+      this.game.rounds = [];
+      this.game.picks = [];
+      if (mode === "all") this.game.players = [];
+      document.getElementById("reset-modal").close();
+      showToast(mode === "all" ? "New game started" : "Scores cleared, players kept", "info");
+    },
+
+    // --- Sessions -----------------------------------------------------------
+
+    openSaveModal() {
+      this.sessionName = dateLabel(new Date());
+      this.clearAfter = false;
+      document.getElementById("save-modal").showModal();
+    },
+
+    async saveSession() {
+      const name = this.sessionName.trim().slice(0, 80);
+      if (!name) return showToast("Give the session a name", "warning");
+      if (!this.game.players.length) return showToast("Nothing to save yet. Add players first", "warning");
+      if (this.view.openRound) return showToast("Confirm or cancel the open round before saving", "warning");
+
+      const snapshot = sessionSnapshot(this.view, name);
+      const saved = await saveTextFile(`${slugify(name)}.json`, JSON.stringify(snapshot, null, 2), "application/json", ".json");
+      if (!saved) return;
+      if (this.clearAfter) {
+        this.game.scores = [];
+        this.game.rounds = [];
+      }
+      document.getElementById("save-modal").close();
+      showToast(`Saved “${name}”`);
+    },
+
+    async openSessionFile(input) {
+      const file = input.files[0];
+      input.value = "";
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (!Array.isArray(data.players) || !Array.isArray(data.rounds)) throw new Error("not a session");
+        this.session = data;
+        window.scrollTo({ top: 0 });
+      } catch {
+        showToast("That file isn't a saved steam scavenge session", "error");
+      }
+    },
+
+    async resumeSession() {
+      if (this.game.players.length && !(await this.askConfirm("Replace the current game with this saved one? Save the current game first if you want to keep it."))) return;
+      this.game = gameFromSnapshot(this.session);
+      showToast(`Loaded “${this.session.name}”`);
+      this.session = null;
+    },
+
+    sessionCell(player, index) {
+      const result = this.session.rounds[index].results?.find((r) => r.player_id === player.id);
+      return result ? result.points : "–";
+    },
+
+    // Round history shows the game's rounds, or the open session file's.
+    get historyRounds() {
+      return this.session ? this.session.rounds : this.view.history;
+    },
+
+    get historyShowPoints() {
+      return this.session ? this.showSessionRoundPoints : this.showRoundPoints;
+    },
+
+    set historyShowPoints(value) {
+      if (this.session) this.showSessionRoundPoints = value;
+      else this.showRoundPoints = value;
+    },
+
+    // --- Task bank ----------------------------------------------------------
+
+    openTaskManager() {
+      this.taskQuery = "";
+      this.tab = "tasks";
+      window.scrollTo({ top: 0 });
+    },
+
+    get bankGroups() {
+      return groupByCategory(this.banks[this.taskKind]);
+    },
+
+    get bankCategories() {
+      return [...new Set(this.banks.tasks.map((t) => t.category))].sort();
+    },
+
+    matchesQuery(task) {
+      const q = this.taskQuery.trim().toLowerCase();
+      return !q || `${task.category} ${task.text} ${task.rule}`.toLowerCase().includes(q);
+    },
+
+    // Build a task from an add/edit form, or show what's missing.
+    taskFromForm(form, id) {
+      const data = new FormData(form);
+      const text = (data.get("text") || "").trim();
+      if (!text) return showToast("The task needs some text", "warning");
+      const category = this.taskKind === "gimmicks" ? "gimmick" : (data.get("category") || "").trim().toLowerCase();
+      if (!category) return showToast("Give the task a category", "warning");
+      return { id, category, text, rule: (data.get("rule") || "").trim() };
+    },
+
+    saveBanks() {
+      writeJson(BANKS_KEY, this.banks);
+    },
+
+    addTask(form) {
+      const list = this.banks[this.taskKind];
+      const task = this.taskFromForm(form, nextTaskId(list));
+      if (!task) return;
+      list.push(task);
+      this.saveBanks();
+      form.reset();
+      showToast("Added");
+    },
+
+    editTask(form, task) {
+      const updated = this.taskFromForm(form, task.id);
+      if (!updated) return false;
+      Object.assign(task, updated);
+      this.saveBanks();
+      showToast("Saved");
+      return true;
+    },
+
+    async deleteTask(task) {
+      if (!(await this.askConfirm(`Delete “${task.text}”?`))) return;
+      this.banks[this.taskKind] = this.banks[this.taskKind].filter((t) => t.id !== task.id);
+      this.saveBanks();
+      showToast("Deleted");
+    },
+
+    async resetBanks() {
+      if (!(await this.askConfirm("Put the task and gimmick lists back to the defaults? Your edits will be lost."))) return;
+      removeKey(BANKS_KEY);
+      this.banks = loadBanks();
+      showToast("Task lists reset", "info");
+    },
+
+    // --- Three options: roll three, pick one, repick any time -----------------
+
+    // True while the three options should be on screen for this slot ("main" or "gimmick").
+    showOptions(slot) {
+      const rnd = this.view.openRound;
+      if (!rnd) return false;
+      const gimmick = slot === "gimmick";
+      const options = gimmick ? this.view.gimmickOptionList : this.view.openOptions;
+      const chosen = gimmick ? rnd.gimmickTaskId : rnd.taskId;
+      return options.length > 0 && (chosen == null || this.choosing[gimmick ? "gimmick" : "main"]);
+    },
+
+    // A choice has been made and there are options to go back to.
+    canRepick(slot) {
+      const options = slot === "gimmick" ? this.view.gimmickOptionList : this.view.openOptions;
+      return options.length > 0 && !this.showOptions(slot);
+    },
+
+    // Roll three different tasks (or gimmicks) for the round to choose from.
+    rollOptions(rnd, slot) {
+      const gimmick = slot === "gimmick";
+      const field = gimmick ? "gimmickOptions" : "options";
+      const prev = new Set(rnd[field] || []);
+      const never = gimmick ? new Set() : new Set([rnd.backupTaskId]);
+      const picks = pickTasks(
+        gimmick ? this.banks.gimmicks : this.banks.tasks,
+        this.playedIds(gimmick ? "gimmickTaskId" : "taskId", gimmick),
+        prev, never, 3,
+      );
+      if (!picks.length) return false;
+      rnd[field] = picks.map((t) => t.id);
+      return true;
+    },
+
+    chooseOption(slot, id) {
+      const rnd = this.view.openRound;
+      if (!rnd) return;
+      if (slot === "gimmick") {
+        rnd.gimmickTaskId = id;
+        this.choosing.gimmick = false;
+      } else {
+        if (rnd.backupTaskId === id) rnd.backupTaskId = rnd.taskId;
+        rnd.taskId = id;
+        this.choosing.main = false;
+      }
+    },
+
+    // --- Import scores ------------------------------------------------------
+
+    async importScores(input) {
+      const file = input.files[0];
+      input.value = "";
+      if (!file) return;
+      let imported;
+      try {
+        imported = scoresFromCsv(await file.text(), this.game.players);
+      } catch (error) {
+        return showToast(error.message || "Couldn't read that CSV", "error");
+      }
+      const counts = `${plural(imported.players.length, "player")} and ${plural(imported.rounds.length, "round")}`;
+      if (this.game.players.length && !(await this.askConfirm(`Replace the current game with ${counts} from ${file.name}? Save the current game first if you want to keep it.`))) return;
+      imported.tasksEnabled = this.game.tasksEnabled;
+      this.game = imported;
+      this.session = null;
+      this.tieNext = false;
+      this.tab = "game";
+      showToast(`Imported ${counts}`);
+    },
+
+    // --- Confirm dialog (confirm() is blocked inside the viewer) --------------
+
+    askConfirm(message) {
+      return new Promise((resolve) => {
+        this._confirm = resolve;
+        this.confirmMsg = message;
+        document.getElementById("confirm-modal").showModal();
+      });
+    },
+
+    answerConfirm(yes) {
+      const done = this._confirm;
+      this._confirm = null;
+      const dialog = document.getElementById("confirm-modal");
+      if (dialog.open) dialog.close();
+      if (done) done(yes);
+    },
+
+    cancelConfirm() {
+      const done = this._confirm;
+      this._confirm = null;
+      if (done) done(false);
+    },
+
+    // --- Scoreboard ---------------------------------------------------------
+
+    lastScore(player) {
+      const last = this.view.lastRound;
+      return last ? this.view.cells[`${player.id}:${last.id}`] || null : null;
+    },
+
+    // --- Task bank page -----------------------------------------------------
+
+    get activeFilter() {
+      return this.taskKind === "tasks" && this.bankCategories.includes(this.filterCat) ? this.filterCat : "";
+    },
+
+    get visibleGroups() {
+      const only = this.activeFilter;
+      return this.bankGroups.filter(([category]) => !only || category === only);
+    },
+
+    // Round numbers this task or gimmick was played in during the current game.
+    playedIn(task) {
+      const gimmick = this.taskKind === "gimmicks";
+      const field = gimmick ? "gimmickTaskId" : "taskId";
+      return this.game.rounds
+        .filter((r) => r.status === "done" && !!r.gimmick === gimmick && r[field] === task.id)
+        .map((r) => r.number)
+        .sort((a, b) => a - b);
+    },
+
+    // Save one field of a task straight from its input.
+    updateTask(task, field, value, el) {
+      value = value.trim();
+      if (field === "category") value = value.toLowerCase();
+      if ((field === "text" || field === "category") && !value) {
+        if (el) el.value = task[field];
+        return showToast(field === "text" ? "A task needs some text" : "Give the task a category", "warning");
+      }
+      if (task[field] === value) return;
+      task[field] = value;
+      this.saveBanks();
+      showToast("Saved");
+    },
+
+    exportBank() {
+      const gimmicks = this.taskKind === "gimmicks";
+      const list = this.banks[this.taskKind];
+      const rows = gimmicks
+        ? [["id", "text", "rule"], ...list.map((t) => [t.id, t.text, t.rule || ""])]
+        : [["id", "category", "text", "rule"], ...list.map((t) => [t.id, t.category, t.text, t.rule || ""])];
+      const text = rows.map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
+      saveTextFile(gimmicks ? "gimmicks.csv" : "tasks.csv", text, "text/csv", ".csv");
+    },
+
+    async importBank(input) {
+      const file = input.files[0];
+      input.value = "";
+      if (!file) return;
+      const gimmicks = this.taskKind === "gimmicks";
+      let items;
+      try {
+        const rows = parseCsv(await file.text());
+        const head = rows[0].map((h) => h.trim().toLowerCase());
+        const col = (name) => head.indexOf(name);
+        if (col("text") < 0 || (!gimmicks && col("category") < 0)) throw new Error("columns");
+        const used = new Set();
+        let next = 1 + Math.max(0, ...rows.slice(1).map((r) => parseInt(r[col("id")], 10) || 0));
+        items = rows.slice(1)
+          .map((r) => ({
+            id: parseInt(r[col("id")], 10) || 0,
+            category: gimmicks ? "gimmick" : (r[col("category")] || "").trim().toLowerCase(),
+            text: (r[col("text")] || "").trim(),
+            rule: col("rule") >= 0 ? (r[col("rule")] || "").trim() : "",
+          }))
+          .filter((t) => t.text && t.category)
+          .map((t) => {
+            if (!t.id || used.has(t.id)) t.id = next++;
+            used.add(t.id);
+            return t;
+          });
+        if (!items.length) throw new Error("empty");
+      } catch {
+        return showToast(
+          gimmicks ? "That CSV needs a text column (and optionally rule)" : "That CSV needs category and text columns",
+          "error",
+        );
+      }
+      const label = gimmicks ? "gimmicks" : "tasks";
+      if (!(await this.askConfirm(`Replace your ${this.banks[this.taskKind].length} ${label} with the ${items.length} in ${file.name}?`))) return;
+      this.banks[this.taskKind] = items;
+      this.saveBanks();
+      showToast(`Imported ${items.length} ${label}`);
+    },
+
+    // --- Task picker --------------------------------------------------------
+
+    openPicker(slot) {
+      this.pickerSlot = slot;
+      const current = this.pickerCurrent;
+      const groups = this.pickerGroups;
+      this.pickerCat = current ? current.category : groups.length ? groups[0][0] : "";
+      document.getElementById("picker-modal").showModal();
+    },
+
+    get pickerGroups() {
+      return groupByCategory(this.pickerSlot === "gimmick" ? this.banks.gimmicks : this.banks.tasks);
+    },
+
+    get pickerItems() {
+      return this.pickerGroups.find(([category]) => category === this.pickerCat)?.[1] || [];
+    },
+
+    get pickerCurrent() {
+      return { main: this.view.openTask, backup: this.view.backupTask, gimmick: this.view.gimmickTask }[this.pickerSlot];
+    },
+  };
+}
+
+/* UI helpers -------------------------------------------------------------- */
+
+function showToast(message, kind = "success") {
+  const box = document.getElementById("toasts");
+  if (!box || !message) return;
+  const toast = document.createElement("div");
+  toast.className = `alert alert-${kind} py-2 text-sm shadow-lg animate__animated animate__fadeInUp animate__faster`;
+  toast.textContent = message;
+  box.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.replace("animate__fadeInUp", "animate__fadeOutDown");
+    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+  }, 2800);
+}
+
+function celebrate() {
+  if (typeof confetti !== "function") return;
+  confetti({ particleCount: 140, spread: 90, origin: { y: 0.6 } });
+  setTimeout(() => confetti({ particleCount: 70, angle: 60, spread: 65, origin: { x: 0, y: 0.7 } }), 180);
+  setTimeout(() => confetti({ particleCount: 70, angle: 120, spread: 65, origin: { x: 1, y: 0.7 } }), 320);
+}
+
+function closeDropdowns() {
+  document.activeElement?.blur();
+}
+
+function toggleScoreboardFullscreen() {
+  const modal = document.getElementById("scoreboard-modal");
+  try {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (modal.requestFullscreen) Promise.resolve(modal.requestFullscreen()).catch(() => {});
+  } catch {
+    /* fullscreen isn't available here */
+  }
+}
+
+// Hide the main task or backup on the host page (for streaming). Classes sit on <html> so re-renders never flash the text.
+const HIDE_SLOTS = ["main", "backup"];
+
+function applyHidden() {
+  for (const slot of HIDE_SLOTS) {
+    document.documentElement.classList.toggle(`hide-${slot}`, loadPref(`hide-${slot}`, false));
+  }
+}
+
+function toggleHidden(slot) {
+  const hidden = document.documentElement.classList.toggle(`hide-${slot}`);
+  savePref(`hide-${slot}`, hidden);
+}
+
+applyHidden();
+
+// Alpine adds elements as data changes; swap any new <i data-lucide> placeholders for icons.
+let iconsQueued = false;
+
+function refreshIcons() {
+  iconsQueued = false;
+  if (window.lucide) lucide.createIcons();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  refreshIcons();
+  new MutationObserver(() => {
+    if (iconsQueued || !document.querySelector("i[data-lucide]")) return;
+    iconsQueued = true;
+    requestAnimationFrame(refreshIcons);
+  }).observe(document.body, { childList: true, subtree: true });
+});
+
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
 </head>
-<body class="min-h-screen font-sans text-base-content antialiased" x-data="host()">
-<div class="mx-auto max-w-7xl px-4 pb-20">
+<body>
+<div id="app" x-data="host()" class="min-h-screen font-sans text-base-content antialiased">
+<div class="page-gutter mx-auto max-w-7xl pb-20">
   <header class="flex flex-wrap items-center gap-3 py-6">
     <div class="flex flex-1 items-center gap-3">
       <div class="dropdown">
@@ -54,9 +2024,7 @@
         <i data-lucide="folder-open" class="size-4"></i> Open
       </button>
       <input type="file" accept=".json,application/json" class="hidden" x-ref="sessionFile" @change="openSessionFile($el)">
-      <button type="button" class="btn btn-sm btn-ghost" @click="openTaskManager()">
-        <i data-lucide="list-checks" class="size-4"></i> Tasks
-      </button>
+      <input type="file" id="scores-file" accept=".csv,text/csv" class="hidden" x-ref="scoresFile" @change="importScores($el)">
       <button type="button" class="btn btn-sm btn-outline btn-secondary" onclick="document.getElementById('scoreboard-modal').showModal()">
         <i data-lucide="tv" class="size-4"></i> Scoreboard
       </button>
@@ -65,8 +2033,8 @@
           <i data-lucide="ellipsis-vertical" class="size-5"></i>
         </div>
         <ul tabindex="0" class="menu dropdown-content z-30 mt-2 w-56 rounded-box border border-base-content/10 bg-base-200 p-2 shadow-2xl">
-          <li><a href="scoreboard.html" target="_blank"><i data-lucide="external-link" class="size-4"></i> Scoreboard in new tab</a></li>
-          <li><button type="button" @click="exportCsv(); closeDropdowns()"><i data-lucide="download" class="size-4"></i> Export CSV</button></li>
+          <li><button type="button" @click="exportCsv(); closeDropdowns()"><i data-lucide="download" class="size-4"></i> Export scores (CSV)</button></li>
+          <li><button type="button" @click="$refs.scoresFile.click(); closeDropdowns()"><i data-lucide="upload" class="size-4"></i> Import scores (CSV)</button></li>
           <li><button type="button" class="text-error" onclick="document.getElementById('reset-modal').showModal()">
             <i data-lucide="rotate-ccw" class="size-4"></i> Reset…
           </button></li>
@@ -75,7 +2043,19 @@
     </div>
   </header>
 
-  <main class="space-y-6">
+  <nav class="mb-6 flex flex-wrap items-center gap-3" aria-label="Sections">
+    <div role="tablist" class="tabs tabs-boxed w-fit">
+      <button type="button" role="tab" class="tab gap-2" :class="tab === 'game' && 'tab-active'" @click="tab = 'game'">
+        <i data-lucide="gamepad-2" class="size-4"></i> Game
+      </button>
+      <button type="button" role="tab" class="tab gap-2" :class="tab === 'tasks' && 'tab-active'" @click="openTaskManager()">
+        <i data-lucide="list-checks" class="size-4"></i> Task bank
+        <span class="badge badge-sm" x-text="banks.tasks.length + banks.gimmicks.length"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="space-y-6" x-show="tab === 'game'">
     <!-- ===== Saved session view (after Open) ===== -->
     <template x-if="session">
       <div class="space-y-6">
@@ -149,8 +2129,11 @@
                     </button>
                     <template x-if="banks.gimmicks.length">
                       <div class="flex gap-1">
-                        <button type="button" class="btn btn-sm btn-ghost gap-1" title="Roll a different gimmick" @click="reroll('gimmick')">
-                          <i data-lucide="dices" class="size-4"></i> Reroll
+                        <button type="button" x-show="canRepick('gimmick')" class="btn btn-sm btn-ghost gap-1" title="Go back to the three options" @click="choosing.gimmick = true">
+                          <i data-lucide="repeat" class="size-4"></i> Repick
+                        </button>
+                        <button type="button" x-show="!canRepick('gimmick')" class="btn btn-sm btn-ghost gap-1" title="Roll three new gimmicks" @click="reroll('gimmick')">
+                          <i data-lucide="dices" class="size-4"></i> Reroll 3
                         </button>
                         <button type="button" class="btn btn-sm btn-ghost gap-1" title="Choose a specific one" @click="openPicker('gimmick')">
                           <i data-lucide="list" class="size-4"></i> Pick
@@ -163,11 +2146,31 @@
                   </div>
                 </div>
                 <div class="secret-main">
-                  <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-3xl"
-                     x-text="view.gimmickTask ? view.gimmickTask.text : 'Gimmick round: run it your way.'"></p>
-                  <template x-if="view.gimmickTask && view.gimmickTask.rule">
-                    <p class="task-rule mt-2"><i data-lucide="triangle-alert" class="size-4 shrink-0"></i> <span x-text="view.gimmickTask.rule"></span></p>
-                  </template>
+                  <div x-show="showOptions('gimmick')" class="mt-3">
+                    <p class="text-sm opacity-70">
+                      Pick one of these three.
+                      <button type="button" x-show="view.gimmickTask" class="font-semibold underline"
+                              @click="choosing.gimmick = false">Keep the current one</button>
+                    </p>
+                    <div class="mt-2 grid gap-2 md:grid-cols-3">
+                      <template x-for="t in view.gimmickOptionList" :key="t.id">
+                        <button type="button" class="task-option choice" :style="`--cat: ${categoryColor(t.category)}`"
+                                :class="view.gimmickTask && view.gimmickTask.id === t.id && 'is-current'"
+                                @click="chooseOption('gimmick', t.id)">
+                          <span class="cat-badge" :style="`--cat: ${categoryColor(t.category)}`" x-text="t.category"></span>
+                          <span class="mt-2 block font-display text-lg font-bold leading-snug" x-text="t.text"></span>
+                          <span x-show="t.rule" class="mt-1 block text-xs text-warning" x-text="t.rule"></span>
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                  <div x-show="!showOptions('gimmick')">
+                    <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-3xl"
+                       x-text="view.gimmickTask ? view.gimmickTask.text : 'Gimmick round: run it your way.'"></p>
+                    <template x-if="view.gimmickTask && view.gimmickTask.rule">
+                      <p class="task-rule mt-2"><i data-lucide="triangle-alert" class="size-4 shrink-0"></i> <span x-text="view.gimmickTask.rule"></span></p>
+                    </template>
+                  </div>
                 </div>
                 <p class="masked-main mt-3 items-center gap-2 font-display text-2xl font-bold opacity-40 md:text-3xl">
                   <i data-lucide="eye-off" class="size-5 shrink-0"></i> Hidden
@@ -189,8 +2192,11 @@
                       <span class="secret-main inline-flex items-center gap-1"><i data-lucide="eye-off" class="size-4"></i> Hide</span>
                       <span class="masked-main items-center gap-1"><i data-lucide="eye" class="size-4"></i> Show</span>
                     </button>
-                    <button type="button" class="btn btn-sm btn-ghost gap-1" title="Roll a different random task" @click="reroll('main')">
-                      <i data-lucide="dices" class="size-4"></i> Reroll
+                    <button type="button" x-show="canRepick('main')" class="btn btn-sm btn-ghost gap-1" title="Go back to the three options" @click="choosing.main = true">
+                      <i data-lucide="repeat" class="size-4"></i> Repick
+                    </button>
+                    <button type="button" x-show="!canRepick('main')" class="btn btn-sm btn-ghost gap-1" title="Roll three new tasks" @click="reroll('main')">
+                      <i data-lucide="dices" class="size-4"></i> Reroll 3
                     </button>
                     <button type="button" class="btn btn-sm btn-ghost gap-1" title="Choose a specific one" @click="openPicker('main')">
                       <i data-lucide="list" class="size-4"></i> Pick
@@ -201,11 +2207,31 @@
                   </div>
                 </div>
                 <div class="secret-main">
-                  <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-3xl"
-                     x-text="view.openTask ? view.openTask.text : 'No task selected. Reroll or pick one.'"></p>
-                  <template x-if="view.openTask && view.openTask.rule">
-                    <p class="task-rule mt-2"><i data-lucide="triangle-alert" class="size-4 shrink-0"></i> <span x-text="view.openTask.rule"></span></p>
-                  </template>
+                  <div x-show="showOptions('main')" class="mt-3">
+                    <p class="text-sm opacity-70">
+                      Pick one of these three.
+                      <button type="button" x-show="view.openTask" class="font-semibold underline"
+                              @click="choosing.main = false">Keep the current one</button>
+                    </p>
+                    <div class="mt-2 grid gap-2 md:grid-cols-3">
+                      <template x-for="t in view.openOptions" :key="t.id">
+                        <button type="button" class="task-option choice" :style="`--cat: ${categoryColor(t.category)}`"
+                                :class="view.openTask && view.openTask.id === t.id && 'is-current'"
+                                @click="chooseOption('main', t.id)">
+                          <span class="cat-badge" :style="`--cat: ${categoryColor(t.category)}`" x-text="t.category"></span>
+                          <span class="mt-2 block font-display text-lg font-bold leading-snug" x-text="t.text"></span>
+                          <span x-show="t.rule" class="mt-1 block text-xs text-warning" x-text="t.rule"></span>
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                  <div x-show="!showOptions('main')">
+                    <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-3xl"
+                       x-text="view.openTask ? view.openTask.text : 'No task selected. Roll three or pick one.'"></p>
+                    <template x-if="view.openTask && view.openTask.rule">
+                      <p class="task-rule mt-2"><i data-lucide="triangle-alert" class="size-4 shrink-0"></i> <span x-text="view.openTask.rule"></span></p>
+                    </template>
+                  </div>
                 </div>
                 <p class="masked-main mt-3 items-center gap-2 font-display text-2xl font-bold opacity-40 md:text-3xl">
                   <i data-lucide="eye-off" class="size-5 shrink-0"></i> Hidden
@@ -244,7 +2270,7 @@
 
             <template x-if="game.tasksEnabled && !view.openRound.gimmick && !banks.tasks.length">
               <div class="task-card mt-4 text-sm opacity-70">
-                No tasks yet. Add some with the <b>Tasks</b> button at the top.
+                No tasks yet. Add some in the <button type="button" class="link font-semibold underline" @click="openTaskManager()">Task bank</button>.
                 <button type="button" class="btn btn-xs btn-ghost text-accent" @click="toggleGimmick()">Gimmick round</button>
               </div>
             </template>
@@ -290,7 +2316,7 @@
                  x-text="view.doneRounds.length ? `${plural(view.doneRounds.length, 'round')} played` : 'Ready when you are'"></p>
               <p class="text-sm opacity-60"
                  x-text="!game.players.length ? 'Add a few players to begin.'
-                   : game.tasksEnabled ? 'Start a round to roll a task, then click players in the order they finish.'
+                   : game.tasksEnabled ? 'Start a round to roll three tasks and pick one, then click players in the order they finish.'
                    : 'Start a round, then click players in the order they finish.'"></p>
             </div>
             <button class="btn btn-primary ml-auto shadow-lg shadow-primary/30" @click="startRound()" :disabled="!game.players.length">
@@ -570,20 +2596,185 @@
       </section>
     </template>
   </main>
+
+  <!-- ===== Task bank: every task and gimmick, editable in place ===== -->
+  <template x-if="tab === 'tasks'">
+    <section class="space-y-4" aria-label="Task bank">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="font-display text-2xl font-extrabold tracking-tight md:text-3xl">Task bank</h2>
+          <p class="mt-1 max-w-xl text-sm opacity-60">
+            Everything the game can roll. Click any field to edit it. Changes save when you leave the field and stay in this browser.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-1">
+          <input type="file" id="bank-file" accept=".csv,text/csv" class="hidden" x-ref="bankFile" @change="importBank($el)">
+          <button type="button" class="btn btn-sm btn-ghost" @click="$refs.bankFile.click()">
+            <i data-lucide="upload" class="size-4"></i> Import CSV
+          </button>
+          <button type="button" class="btn btn-sm btn-ghost" @click="exportBank()">
+            <i data-lucide="download" class="size-4"></i> Export CSV
+          </button>
+          <button type="button" class="btn btn-sm btn-ghost" @click="resetBanks()">
+            <i data-lucide="rotate-ccw" class="size-4"></i> Reset to defaults
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card space-y-4 rounded-2xl p-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <div role="tablist" class="tabs tabs-boxed w-fit">
+            <button type="button" role="tab" class="tab gap-2" :class="taskKind === 'tasks' && 'tab-active'" @click="taskKind = 'tasks'">
+              Tasks <span class="badge badge-sm" x-text="banks.tasks.length"></span>
+            </button>
+            <button type="button" role="tab" class="tab gap-2" :class="taskKind === 'gimmicks' && 'tab-active'" @click="taskKind = 'gimmicks'">
+              Gimmicks <span class="badge badge-sm" x-text="banks.gimmicks.length"></span>
+            </button>
+          </div>
+          <label class="input input-sm input-bordered ml-auto flex w-full items-center gap-2 sm:w-64" for="task-search">
+            <i data-lucide="search" class="size-4 opacity-50"></i>
+            <input type="search" id="task-search" x-model="taskQuery" placeholder="Search tasks and rules" class="grow">
+          </label>
+        </div>
+
+        <div x-show="taskKind === 'tasks' && bankCategories.length > 1" class="flex flex-wrap gap-1.5">
+          <button type="button" class="cat-chip" style="--cat: #94a3b8" :class="!activeFilter && 'is-active'" @click="filterCat = ''">
+            all <span class="opacity-60" x-text="banks.tasks.length"></span>
+          </button>
+          <template x-for="c in bankCategories" :key="c">
+            <button type="button" class="cat-chip" :style="`--cat: ${categoryColor(c)}`" :class="activeFilter === c && 'is-active'"
+                    @click="filterCat = activeFilter === c ? '' : c">
+              <span x-text="c"></span>
+              <span class="opacity-60" x-text="banks.tasks.filter((t) => t.category === c).length"></span>
+            </button>
+          </template>
+        </div>
+
+        <form @submit.prevent="addTask($el)" class="task-edit-row task-add-row" :class="taskKind === 'gimmicks' && 'is-gimmick'">
+          <input x-show="taskKind === 'tasks'" id="new-task-category" name="category" list="task-categories" placeholder="category"
+                 autocomplete="off" class="input input-sm input-bordered w-full" :value="activeFilter">
+          <input id="new-task-text" name="text" required autocomplete="off" class="input input-sm input-bordered w-full"
+                 :placeholder="taskKind === 'tasks' ? 'New task' : 'New gimmick'">
+          <input id="new-task-rule" name="rule" autocomplete="off" placeholder="Rule (optional)" class="input input-sm input-bordered w-full">
+          <div class="row-tools">
+            <button class="btn btn-primary btn-sm"><i data-lucide="plus" class="size-4"></i> Add</button>
+          </div>
+        </form>
+        <datalist id="task-categories">
+          <template x-for="c in bankCategories" :key="c"><option :value="c"></option></template>
+        </datalist>
+      </div>
+
+      <div class="space-y-5">
+        <template x-for="[category, items] in visibleGroups" :key="`${taskKind}-${category}`">
+          <div x-show="items.some((t) => matchesQuery(t))">
+            <div x-show="taskKind === 'tasks' && !taskQuery" class="mb-2 flex items-center gap-2">
+              <span class="cat-badge" :style="`--cat: ${categoryColor(category)}`" x-text="category"></span>
+              <span class="text-xs opacity-50" x-text="plural(items.length, 'task')"></span>
+            </div>
+            <div class="space-y-1.5">
+              <template x-for="t in items" :key="`${taskKind}-${t.id}`">
+                <div x-show="matchesQuery(t)" class="task-edit-row" :class="taskKind === 'gimmicks' && 'is-gimmick'">
+                  <input x-show="taskKind === 'tasks'" :id="`task-cat-${t.id}`" :value="t.category" list="task-categories" autocomplete="off"
+                         aria-label="Category" class="input input-ghost field-cat"
+                         :style="`color: ${categoryColor(t.category)}`" @change="updateTask(t, 'category', $el.value, $el)">
+                  <textarea rows="1" :id="`${taskKind}-text-${t.id}`" :value="t.text" aria-label="Text"
+                            class="textarea textarea-ghost field"
+                            x-init="$nextTick(() => autosize($el))" @input="autosize($el)"
+                            @change="updateTask(t, 'text', $el.value, $el)"></textarea>
+                  <textarea rows="1" :id="`${taskKind}-rule-${t.id}`" :value="t.rule || ''" aria-label="Rule" placeholder="Rule (optional)"
+                            class="textarea textarea-ghost field field-rule"
+                            x-init="$nextTick(() => autosize($el))" @input="autosize($el)"
+                            @change="updateTask(t, 'rule', $el.value, $el)"></textarea>
+                  <div class="row-tools">
+                    <span x-show="playedIn(t).length" class="badge badge-sm whitespace-nowrap opacity-80"
+                          :title="'Played this game in ' + playedIn(t).map((n) => 'round ' + n).join(', ')"
+                          x-text="'played R' + playedIn(t).join(', R')"></span>
+                    <button type="button" class="btn btn-ghost btn-xs btn-square text-error/70 hover:text-error" title="Delete" aria-label="Delete"
+                            @click="deleteTask(t)">
+                      <i data-lucide="trash-2" class="size-3.5"></i>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+        <p x-show="!banks[taskKind].length" class="py-10 text-center text-sm opacity-60">Nothing here yet. Add one above.</p>
+        <p x-show="taskQuery && banks[taskKind].length && !bankGroups.some(([c, items]) => items.some((t) => matchesQuery(t)))"
+           class="py-10 text-center text-sm opacity-60">No matches for that search.</p>
+      </div>
+    </section>
+  </template>
 </div>
 
-<!-- ===== Scoreboard popup: the scoreboard page in a frame, so it updates live ===== -->
+<!-- ===== Scoreboard popup: live standings, updates as the game changes ===== -->
 <dialog id="scoreboard-modal" class="modal scoreboard-modal">
   <div class="modal-box relative p-0">
     <div class="absolute right-3 top-3 z-10 flex gap-1">
-      <button type="button" class="btn btn-ghost btn-sm btn-square" title="Full screen" onclick="toggleScoreboardFullscreen()">
+      <button type="button" class="btn btn-ghost btn-sm btn-square" title="Full screen" aria-label="Full screen" onclick="toggleScoreboardFullscreen()">
         <i data-lucide="maximize-2" class="size-4"></i>
       </button>
-      <form method="dialog"><button class="btn btn-ghost btn-sm btn-square" title="Close (Esc)">
+      <form method="dialog"><button class="btn btn-ghost btn-sm btn-square" title="Close (Esc)" aria-label="Close">
         <i data-lucide="x" class="size-5"></i>
       </button></form>
     </div>
-    <iframe src="scoreboard.html" title="Scoreboard" class="scoreboard-frame"></iframe>
+    <div class="scoreboard-body">
+      <div class="scoreboard-bg px-4 py-10 md:px-10">
+  <header class="mb-6 text-center">
+    <p class="text-sm font-semibold uppercase tracking-[0.35em] text-primary">Live standings</p>
+    <h1 class="mt-2 font-display text-5xl font-extrabold tracking-tight md:text-7xl">steam scavenge</h1>
+  </header>
+
+  <div class="mx-auto max-w-4xl">
+    <div class="mb-8 flex flex-wrap justify-center gap-2">
+      <template x-if="view.openRound">
+        <div class="contents">
+          <span class="badge badge-primary badge-lg gap-2 px-4 py-4 text-base"><span class="live-dot"></span> <span x-text="`Round ${view.openRound.number} in progress`"></span></span>
+          <template x-if="game.tasksEnabled && view.openRound.gimmick">
+            <div class="task-card gimmick w-full text-center">
+              <span class="cat-badge xl" style="--cat: #fbbf24">🎭 gimmick</span>
+              <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-4xl" x-text="view.gimmickTask ? view.gimmickTask.text : 'Gimmick round'"></p>
+              <p x-show="view.gimmickTask?.rule" class="task-rule mx-auto mt-3 w-fit text-base md:text-lg" x-text="`⚠ ${view.gimmickTask?.rule}`"></p>
+            </div>
+          </template>
+          <template x-if="game.tasksEnabled && !view.openRound.gimmick && view.openTask">
+            <div class="task-card w-full text-center" :style="`--cat: ${categoryColor(view.openTask.category)}`">
+              <span class="cat-badge xl" :style="`--cat: ${categoryColor(view.openTask.category)}`" x-text="view.openTask.category"></span>
+              <p class="mt-3 font-display text-2xl font-bold leading-snug md:text-4xl" x-text="view.openTask.text"></p>
+              <p x-show="view.openTask.rule" class="task-rule mx-auto mt-3 w-fit text-base md:text-lg" x-text="`⚠ ${view.openTask.rule}`"></p>
+            </div>
+          </template>
+        </div>
+      </template>
+      <span x-show="!view.openRound && view.doneRounds.length" class="badge badge-lg border-base-content/20 bg-base-200/70 px-4 py-4 text-base"
+            x-text="`After ${plural(view.doneRounds.length, 'round')}`"></span>
+    </div>
+
+    <ol x-show="view.ranked.length" class="space-y-3 md:space-y-4">
+      <template x-for="(entry, i) in view.ranked" :key="entry.item.id">
+        <li class="lb-row animate__animated animate__fadeInUp" :class="entry.rank <= 3 && `rank-${entry.rank}`"
+            :style="`--player: ${entry.item.color}; animation-delay: ${i * 70}ms`">
+          <div class="rank-badge" x-text="entry.rank"></div>
+          <div class="avatar placeholder hidden shrink-0 sm:inline-flex">
+            <div class="w-14 rounded-full text-xl font-bold text-neutral-900 md:w-16" :style="`background: ${entry.item.color}`">
+              <span x-text="initials(entry.item.name)"></span>
+            </div>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="truncate font-display text-2xl font-bold md:text-4xl" x-text="entry.item.name"></div>
+            <div x-show="lastScore(entry.item)?.place" class="text-sm opacity-60 md:text-base"
+                 x-text="lastScore(entry.item) ? `${roundLabel(view.lastRound)}: ${ordinal(lastScore(entry.item).place || 0)} · +${lastScore(entry.item).points}` : ''"></div>
+          </div>
+          <div class="font-display text-4xl font-extrabold tabular-nums md:text-6xl" x-text="entry.total"></div>
+        </li>
+      </template>
+    </ol>
+    <p x-show="!view.ranked.length" class="py-24 text-center font-display text-3xl opacity-50">Waiting for contestants…</p>
+  </div>
+
+      </div>
+    </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
@@ -617,87 +2808,14 @@
   <form method="dialog" class="modal-backdrop"><button>close</button></form>
 </dialog>
 
-<!-- ===== Task bank ===== -->
-<dialog id="tasks-modal" class="modal">
-  <div class="modal-box w-[min(96vw,48rem)] max-w-none border border-base-content/10">
-    <form method="dialog" class="absolute right-3 top-3">
-      <button class="btn btn-ghost btn-sm btn-square" title="Close (Esc)"><i data-lucide="x" class="size-5"></i></button>
-    </form>
-    <h3 class="mb-4 font-display text-xl font-bold">Task bank</h3>
-    <div class="flex flex-wrap items-center gap-3">
-      <div role="tablist" class="tabs-boxed tabs w-fit">
-        <button type="button" role="tab" class="tab gap-2" :class="taskKind === 'tasks' && 'tab-active'" @click="taskKind = 'tasks'">
-          Tasks <span class="badge badge-sm" x-text="banks.tasks.length"></span>
-        </button>
-        <button type="button" role="tab" class="tab gap-2" :class="taskKind === 'gimmicks' && 'tab-active'" @click="taskKind = 'gimmicks'">
-          🎭 Gimmicks <span class="badge badge-sm" x-text="banks.gimmicks.length"></span>
-        </button>
-      </div>
-      <label class="input input-sm input-bordered ml-auto flex w-full items-center gap-2 sm:w-56">
-        <i data-lucide="search" class="size-4 opacity-50"></i>
-        <input type="search" x-model="taskQuery" placeholder="Search…" class="grow">
-      </label>
-    </div>
-
-    <form @submit.prevent="addTask($el)" class="mt-4 flex flex-wrap gap-2 rounded-xl border border-base-content/10 bg-base-300/60 p-3">
-      <input x-show="taskKind === 'tasks'" name="category" list="task-categories" placeholder="category" autocomplete="off"
-             class="input input-sm input-bordered w-32">
-      <input name="text" required :placeholder="taskKind === 'tasks' ? 'New task…' : 'New gimmick…'"
-             class="input input-sm input-bordered min-w-[12rem] flex-1">
-      <input x-show="taskKind === 'gimmicks'" name="rule" placeholder="Rule (optional)" class="input input-sm input-bordered min-w-[12rem] flex-1">
-      <button class="btn btn-primary btn-sm"><i data-lucide="plus" class="size-4"></i> Add</button>
-    </form>
-    <datalist id="task-categories">
-      <template x-for="c in bankCategories" :key="c"><option :value="c"></option></template>
-    </datalist>
-
-    <div class="mt-4 max-h-[50vh] space-y-4 overflow-y-auto pr-1">
-      <template x-for="[category, items] in bankGroups" :key="`${taskKind}-${category}`">
-        <div x-show="items.some((t) => matchesQuery(t))">
-          <div x-show="!taskQuery" class="mb-2 flex items-center gap-2">
-            <span class="cat-badge" :style="`--cat: ${categoryColor(category)}`" x-text="category"></span>
-            <span class="text-xs opacity-50" x-text="items.length"></span>
-          </div>
-          <div class="space-y-1.5">
-            <template x-for="t in items" :key="t.id">
-              <div x-data="{ editing: false }" x-show="matchesQuery(t)" class="task-row">
-                <div x-show="!editing" class="flex items-start gap-2">
-                  <div class="min-w-0 flex-1">
-                    <p class="text-sm" x-text="t.text"></p>
-                    <p x-show="t.rule" class="mt-0.5 text-xs text-warning" x-text="t.rule"></p>
-                  </div>
-                  <button type="button" class="btn btn-ghost btn-xs btn-square" title="Edit" @click="editing = true">
-                    <i data-lucide="pencil" class="size-3.5"></i>
-                  </button>
-                  <button type="button" class="btn btn-ghost btn-xs btn-square text-error/70 hover:text-error" title="Delete" @click="deleteTask(t)">
-                    <i data-lucide="trash-2" class="size-3.5"></i>
-                  </button>
-                </div>
-                <template x-if="editing">
-                  <form class="flex flex-wrap items-center gap-2"
-                        @submit.prevent="if (editTask($el, t)) editing = false" @keydown.escape.stop="editing = false">
-                    <input x-show="taskKind === 'tasks'" name="category" :value="t.category" list="task-categories" autocomplete="off"
-                           class="input input-xs input-bordered w-28">
-                    <input name="text" :value="t.text" required class="input input-xs input-bordered min-w-[12rem] flex-1">
-                    <input x-show="taskKind === 'gimmicks'" name="rule" :value="t.rule" placeholder="Rule (optional)"
-                           class="input input-xs input-bordered min-w-[12rem] flex-1">
-                    <button class="btn btn-primary btn-xs">Save</button>
-                    <button type="button" class="btn btn-ghost btn-xs" @click="editing = false">Cancel</button>
-                  </form>
-                </template>
-              </div>
-            </template>
-          </div>
-        </div>
-      </template>
-      <p x-show="!banks[taskKind].length" class="py-8 text-center text-sm opacity-60">Nothing here yet. Add one above.</p>
-    </div>
-
-    <div class="mt-4 flex items-center justify-between gap-2 border-t border-base-content/10 pt-3">
-      <p class="text-xs opacity-50">Edits are kept in this browser.</p>
-      <button type="button" class="btn btn-ghost btn-xs" @click="resetBanks()">
-        <i data-lucide="rotate-ccw" class="size-3.5"></i> Reset to defaults
-      </button>
+<!-- ===== Confirm (replaces the browser's confirm box) ===== -->
+<dialog id="confirm-modal" class="modal" @close="cancelConfirm()">
+  <div class="modal-box border border-base-content/10">
+    <h3 class="font-display text-xl font-bold">Are you sure?</h3>
+    <p class="py-3 text-sm opacity-80" x-text="confirmMsg"></p>
+    <div class="modal-action">
+      <button type="button" class="btn btn-ghost" @click="answerConfirm(false)">Cancel</button>
+      <button type="button" class="btn btn-primary" @click="answerConfirm(true)">Yes, continue</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop"><button>close</button></form>
@@ -741,5 +2859,7 @@
 </dialog>
 
 <div id="toasts" class="toast toast-end toast-bottom z-50"></div>
+
+</div>
 </body>
 </html>
